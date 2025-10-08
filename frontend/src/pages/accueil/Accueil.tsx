@@ -17,19 +17,24 @@ import {
   ArrowLeft,
   ArrowRight,
   Mail,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { passwordService, PasswordEntry, CreatePasswordData, UpdatePasswordData } from "../../services/passwordService";
 
 type PasswordForm = {
   id?: string;
   title: string;
-  email: string;
+  username: string;
   url?: string;
   password: string;
-  description: string;
+  notes: string;
 };
 
 const Accueil = () => {
-  const colorPalette = [
+  const { user, logout } = useAuth();
+  
+  const colorPalette = useMemo(() => [
     { lock: "text-indigo-600", url: "text-indigo-600", bg: "bg-indigo-50" },
     { lock: "text-blue-600", url: "text-blue-600", bg: "bg-blue-50" },
     { lock: "text-green-600", url: "text-green-600", bg: "bg-green-50" },
@@ -38,106 +43,28 @@ const Accueil = () => {
     { lock: "text-amber-600", url: "text-amber-600", bg: "bg-amber-50" },
     { lock: "text-fuchsia-600", url: "text-fuchsia-600", bg: "bg-fuchsia-50" },
     { lock: "text-rose-600", url: "text-rose-600", bg: "bg-rose-50" },
-  ];
+  ], []);
 
   const [popUp, setPopUp] = useState<boolean>(false);
-  const [passwords, setPasswords] = useState<PasswordForm[]>([]);
+  const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
 
-  // Initialize informations from database
-
-  // MODIFIER ICI
-  useEffect(() => {
-    // Récupérer dans la database les mots de passe
-    setPasswords([
-      {
-        id: "1",
-        title: "Gmail",
-        email: "user@gmail.com",
-        url: "https://gmail.com",
-        password: "MyP@ssw0rd123!",
-        description: "Mon compte email principal",
-      },
-      {
-        id: "2",
-        title: "GitHub",
-        email: "dev@github.com",
-        password: "Gh@Secur3Pass456",
-        description: "",
-      },
-      {
-        id: "3",
-        title: "Facebook",
-        email: "me@facebook.com",
-        url: "https://facebook.com",
-        password: "Fb!Conn3ct2024",
-        description: "Profil personnel",
-      },
-      {
-        id: "4",
-        title: "Twitter",
-        email: "tweet@twitter.com",
-        url: "https://twitter.com",
-        password: "Tw1tt3r#Feed89",
-        description: "Compte de micro-blogging",
-      },
-      {
-        id: "5",
-        title: "LinkedIn",
-        email: "pro@linkedin.com",
-        url: "https://linkedin.com",
-        password: "Lnkd!NProf33",
-        description: "Réseau pro",
-      },
-      {
-        id: "6",
-        title: "Dropbox",
-        email: "files@dropbox.com",
-        url: "https://dropbox.com",
-        password: "Dr0pB0x_Sync!!",
-        description: "Stockage fichiers",
-      },
-      {
-        id: "7",
-        title: "Slack",
-        email: "work@slack.com",
-        url: "https://slack.com",
-        password: "Sl@ck-Work2022",
-        description: "Workspace principal",
-      },
-      {
-        id: "8",
-        title: "Spotify",
-        email: "music@spotify.com",
-        url: "https://spotify.com",
-        password: "Sp0t!fyTune77",
-        description: "Streaming musique",
-      },
-      {
-        id: "9",
-        title: "Netflix",
-        email: "family@netflix.com",
-        url: "https://netflix.com",
-        password: "N3tfl!xBinge9",
-        description: "Compte famille",
-      },
-      {
-        id: "10",
-        title: "Amazon",
-        email: "shop@amazon.com",
-        url: "https://amazon.com",
-        password: "Am@z0nShop#55",
-        description: "Boutique en ligne",
-      },
-      {
-        id: "11",
-        title: "Twitch",
-        email: "gaming@twitch.com",
-        url: "https://twitch.com",
-        password: "Tw!tchGaming!!",
-        description: "Streaming jeux",
-      },
-    ]);
+  // Récupérer les mots de passe depuis la base de données
+  const fetchPasswords = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const passwordsData = await passwordService.getAllPasswords();
+      setPasswords(passwordsData);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des mots de passe:', error);
+      toast.error('Erreur lors du chargement des mots de passe');
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchPasswords();
+  }, [fetchPasswords]);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [visiblePasswords, setVisiblePasswords] = useState<
@@ -145,10 +72,10 @@ const Accueil = () => {
   >({});
   const [formData, setFormData] = useState<PasswordForm>({
     title: "",
-    email: "",
+    username: "",
     url: "",
     password: "",
-    description: "",
+    notes: "",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -166,7 +93,7 @@ const Accueil = () => {
     return passwords.filter(
       (p) =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (p.url && p.url.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [passwords, searchTerm]);
@@ -237,9 +164,6 @@ const Accueil = () => {
     );
   }, [filteredPasswords, currentPage, itemsPerPage]);
 
-  const isValidEmail = useCallback((email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }, []);
 
   const isValidUrl = useCallback((url: string): boolean => {
     try {
@@ -253,9 +177,9 @@ const Accueil = () => {
   // MODIFIER ICI
 
   const handleSubmit = useCallback(async () => {
-    if (!formData.title || !formData.email || !formData.password) {
+    if (!formData.title || !formData.username || !formData.password) {
       toast.error(
-        "Veuillez remplir les champs obligatoires (Titre, Email, Mot de passe)."
+        "Veuillez remplir les champs obligatoires (Titre, Nom d'utilisateur, Mot de passe)."
       );
       return;
     }
@@ -263,40 +187,56 @@ const Accueil = () => {
       toast.error("Veuillez entrer une URL valide (ex: https://exemple.com).");
       return;
     }
-    if (!isValidEmail(formData.email)) {
-      toast.error("Veuillez entrer un email valide.");
-      return;
-    }
+    
     try {
-      // MODIFIER ICI POUR AJOUTER L'AJOUT EN BDD ET GERER L'ERREUR
       setIsLoading(true);
-      const newPassword = {
-        ...formData,
-        id: editingId || Date.now().toString(),
-      };
-      setPasswords((prev) =>
-        editingId
-          ? prev.map((p) => (p.id === editingId ? newPassword : p))
-          : [...prev, newPassword]
-      );
-      toast.success(
-        `Mot de passe ${editingId ? "mis à jour" : "ajouté"} avec succès !`
-      );
+      
+      if (editingId) {
+        // Mise à jour d'un mot de passe existant
+        const updateData: UpdatePasswordData = {
+          id: editingId,
+          title: formData.title,
+          url: formData.url,
+          username: formData.username,
+          password: formData.password,
+          notes: formData.notes,
+        };
+        
+        await passwordService.updatePassword(updateData);
+        toast.success("Mot de passe mis à jour avec succès !");
+      } else {
+        // Création d'un nouveau mot de passe
+        const createData: CreatePasswordData = {
+          title: formData.title,
+          url: formData.url,
+          username: formData.username,
+          password: formData.password,
+          notes: formData.notes,
+        };
+        
+        await passwordService.createPassword(createData);
+        toast.success("Mot de passe ajouté avec succès !");
+      }
+      
+      // Recharger la liste des mots de passe
+      await fetchPasswords();
+      
       setPopUp(false);
       setFormData({
         title: "",
-        email: "",
+        username: "",
         url: "",
         password: "",
-        description: "",
+        notes: "",
       });
       setEditingId(null);
     } catch (error) {
-      toast.error("Une erreur est survenue.");
+      console.error('Erreur lors de la sauvegarde:', error);
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
     } finally {
       setIsLoading(false);
     }
-  }, [formData, editingId]);
+  }, [formData, editingId, isValidUrl, fetchPasswords]);
 
   const confirmDeletePassword = useCallback((id: string, title: string) => {
     setConfirmDelete({ id, title });
@@ -305,16 +245,18 @@ const Accueil = () => {
   const deletePassword = useCallback(async (id: string) => {
     try {
       setIsLoading(true);
-      // MODIFIER ICI POUR SUPPRIMER EN BDD LE SITE
-      setPasswords((prev) => prev.filter((p) => p.id !== id));
-      toast.success("Mot de passe supprimé.");
+      await passwordService.deletePassword(id);
+      toast.success("Mot de passe supprimé avec succès.");
+      // Recharger la liste des mots de passe
+      await fetchPasswords();
     } catch (error) {
-      toast.error("Échec de la suppression.");
+      console.error('Erreur lors de la suppression:', error);
+      toast.error(error instanceof Error ? error.message : "Échec de la suppression.");
     } finally {
       setIsLoading(false);
       setConfirmDelete({ id: null, title: "" });
     }
-  }, []);
+  }, [fetchPasswords]);
 
   const copyPassword = useCallback((password: string) => {
     navigator.clipboard
@@ -326,9 +268,16 @@ const Accueil = () => {
     setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
-  const openEditPopup = useCallback((password: PasswordForm) => {
-    setFormData({ ...password });
-    setEditingId(password.id!);
+  const openEditPopup = useCallback((password: PasswordEntry) => {
+    setFormData({ 
+      id: password.id,
+      title: password.title,
+      username: password.username,
+      url: password.url || "",
+      password: password.password,
+      notes: password.notes,
+    });
+    setEditingId(password.id);
     setPopUp(true);
   }, []);
 
@@ -354,9 +303,13 @@ const Accueil = () => {
   }, []);
 
   const getRandomColor = useCallback((id: string) => {
+    if (!id || colorPalette.length === 0) {
+      // Retourner une couleur par défaut si l'ID est invalide ou si la palette est vide
+      return { lock: "text-gray-600", url: "text-gray-600", bg: "bg-gray-50" };
+    }
     const index = parseInt(id) % colorPalette.length;
     return colorPalette[index];
-  }, []);
+  }, [colorPalette]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
@@ -370,25 +323,46 @@ const Accueil = () => {
               <p className="text-sm text-gray-600 mt-1">
                 Gestionnaire de mots de passe sécurisé
               </p>
+              {user && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Connecté en tant que: {user.email}
+                </p>
+              )}
             </div>
-            <button
-              onClick={() => {
-                setFormData({
-                  title: "",
-                  email: "",
-                  url: "",
-                  password: "",
-                  description: "",
-                });
-                setEditingId(null);
-                setPopUp(true);
-              }}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
-              disabled={isLoading}
-              aria-label="Ajouter un nouveau mot de passe"
-            >
-              <Plus size={18} /> Nouveau mot de passe
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setFormData({
+                    title: "",
+                    username: "",
+                    url: "",
+                    password: "",
+                    notes: "",
+                  });
+                  setEditingId(null);
+                  setPopUp(true);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
+                disabled={isLoading}
+                aria-label="Ajouter un nouveau mot de passe"
+              >
+                <Plus size={18} /> Nouveau mot de passe
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await logout();
+                  } catch (error) {
+                    console.error('Erreur lors de la déconnexion:', error);
+                    toast.error('Erreur lors de la déconnexion');
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
+                aria-label="Se déconnecter"
+              >
+                <LogOut size={18} /> Déconnexion
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -401,7 +375,7 @@ const Accueil = () => {
             </div>
             <input
               type="text"
-              placeholder="Rechercher un site, un email ou un mot de passe..."
+              placeholder="Rechercher un site, un nom d'utilisateur ou un mot de passe..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
@@ -418,7 +392,7 @@ const Accueil = () => {
           <div className="divide-y divide-gray-100">
             {paginatedPasswords.length > 0
               ? paginatedPasswords.map((item) => {
-                  const color = getRandomColor(item.id!);
+                  const color = getRandomColor(item.id!) || { lock: "text-gray-600", url: "text-gray-600", bg: "bg-gray-50" };
                   return (
                     <div
                       key={item.id}
@@ -432,14 +406,14 @@ const Accueil = () => {
                           <div>
                             <h3 className="font-semibold text-gray-900 text-lg flex items-center gap-2">
                               {item.title}
-                              {item.description && (
+                              {item.notes && (
                                 <span
                                   className="text-gray-400 hover:text-gray-600 cursor-help"
-                                  title={item.description}
+                                  title={item.notes}
                                 >
                                   <Info
                                     size={16}
-                                    aria-label="Description disponible"
+                                    aria-label="Notes disponibles"
                                   />
                                 </span>
                               )}
@@ -458,14 +432,14 @@ const Accueil = () => {
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 ">
-                          {/* Email cliquable pour copier */}
+                          {/* Nom d'utilisateur cliquable pour copier */}
                           <button
                             onClick={() => {
-                              navigator.clipboard.writeText(item.email);
-                              toast.success("Email copié !");
+                              navigator.clipboard.writeText(item.username);
+                              toast.success("Nom d'utilisateur copié !");
                             }}
                             className="flex items-center md:min-w-[180px] sm:min-w-[10px] max-w-[180px] gap-2 sm:mr-4 md:mr-0 py-2 hover:bg-gray-50 rounded-lg transition-colors"
-                            title="Copier l'email"
+                            title="Copier le nom d'utilisateur"
                             disabled={isLoading}
                           >
                             <Mail
@@ -473,7 +447,7 @@ const Accueil = () => {
                               size={16}
                             />
                             <span className="text-sm text-gray-700 truncate text-left  md:block sm:hidden">
-                              {item.email}
+                              {item.username}
                             </span>
                           </button>
 
@@ -726,21 +700,21 @@ const Accueil = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
+                    Nom d'utilisateur *
                   </label>
                   <input
-                    type="email"
-                    value={formData.email}
+                    type="text"
+                    value={formData.username}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        email: e.target.value,
+                        username: e.target.value,
                       }))
                     }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="votre@email.com"
+                    placeholder="nom_utilisateur"
                     disabled={isLoading}
-                    aria-label="Email associé"
+                    aria-label="Nom d'utilisateur"
                   />
                 </div>
                 <div>
@@ -804,21 +778,21 @@ const Accueil = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description (optionnelle)
+                    Notes (optionnelles)
                   </label>
                   <textarea
-                    value={formData.description}
+                    value={formData.notes}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        description: e.target.value,
+                        notes: e.target.value,
                       }))
                     }
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                     rows={3}
                     placeholder="Notes ou informations supplémentaires..."
                     disabled={isLoading}
-                    aria-label="Description du mot de passe"
+                    aria-label="Notes du mot de passe"
                   />
                 </div>
               </div>

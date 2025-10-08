@@ -23,5 +23,12 @@ declare namespace NodeJS {
 
 // Used in Renderer process, expose in `preload.ts`
 interface Window {
-  ipcRenderer: import('electron').IpcRenderer
+  ipcRenderer: {
+    on(...args: Parameters<import('electron').IpcRenderer['on']>): void
+    off(...args: Parameters<import('electron').IpcRenderer['off']>): void
+    send(...args: Parameters<import('electron').IpcRenderer['send']>): void
+    invoke(...args: Parameters<import('electron').IpcRenderer['invoke']>): void
+    onDeepLinkResetPassword: (callback: (data: { token: string; csrf: string }) => void) => void
+    removeDeepLinkResetPasswordListener: () => void
+  }
 }

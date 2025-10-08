@@ -1,13 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, Check, X, ArrowLeft } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 const Connexion = () => {
+  const { login, register, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   type Tab = "connexion" | "register" | "forgotPassword" | "emailSent";
   const [activeTab, setActiveTab] = useState<Tab>("connexion");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [forgotEmailSent, setForgotEmailSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Connexion form
   const [loginEmail, setLoginEmail] = useState("");
@@ -40,54 +49,122 @@ const Connexion = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  // MODIFIER ICI
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, location]);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    
     if (!isValidEmail(loginEmail)) {
       setLoginEmailError("Veuillez entrer un email valide");
       return;
     }
+    
+    if (!loginPassword) {
+      setError("Veuillez entrer votre mot de passe");
+      return;
+    }
+    
     setLoginEmailError("");
-    console.log("Login:", { loginEmail, loginPassword, loginRemember });
+    setIsSubmitting(true);
+    
+    try {
+      await login(loginEmail, loginPassword, loginRemember);
+      // La redirection sera gérée par le useEffect ci-dessus
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erreur de connexion");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // MODIFIER ICI
-
-  const handleForgotPassword = (e?: React.FormEvent) => {
+  const handleForgotPassword = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!isValidEmail(forgotEmail)) {
       setForgotEmailError("Veuillez entrer un email valide");
       return;
     }
+    
     setForgotEmailError("");
-    setForgotEmailSent(true);
-    console.log("Forgot password email sent to:", forgotEmail);
+    setIsSubmitting(true);
+    setError("");
+    
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_KEY = import.meta.env.VITE_API_KEY || 'a16c198828b297a3588020685168cb5981037be330731464ab9555dfd47a0f15';
+      
+      const response = await fetch(`${API_URL}/api/password-reset/request`, {
+        method: 'POST',
+        headers: {
+          'x-api-key': API_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        setForgotEmailSent(true);
+        setSuccess("Email envoyé ! Un email de réinitialisation de mot de passe a été envoyé à " + forgotEmail + ". Veuillez vérifier votre boîte de réception.");
+      } else {
+        setError(data.message || "Erreur lors de l'envoi de l'email");
+        setForgotEmailSent(false); // S'assurer que le formulaire reste affiché
+      }
+    } catch (error) {
+      console.error('Erreur lors de la demande de réinitialisation:', error);
+      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  // MODIFIER ICI
-
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+    
     if (!isValidEmail(registerEmail)) {
       setRegisterEmailError("Veuillez entrer un email valide");
       return;
     }
+    
     if (
-      hasMinLength &&
-      hasLowercase &&
-      hasUppercase &&
-      hasNumber &&
-      hasSpecialChar &&
-      passwordsMatch
+      !hasMinLength ||
+      !hasLowercase ||
+      !hasUppercase ||
+      !hasNumber ||
+      !hasSpecialChar ||
+      !passwordsMatch
     ) {
-      setRegisterEmailError("");
-      console.log("Register:", {
-        registerEmail,
-        registerPassword,
-        registerRemember,
-      });
-      setEmailSent(true);
+      setError("Veuillez respecter tous les critères du mot de passe");
+      return;
+    }
+    
+    setRegisterEmailError("");
+    setIsSubmitting(true);
+    
+    try {
+      await register(registerEmail, registerPassword);
+      setSuccess("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
+      setActiveTab("connexion");
+      // Pré-remplir l'email dans le formulaire de connexion
+      setLoginEmail(registerEmail);
+      // Réinitialiser le formulaire d'inscription
+      setRegisterEmail("");
+      setRegisterPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erreur lors de l'inscription");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -269,6 +346,16 @@ const Connexion = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Bon retour parmi nous !
               </h2>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                  {success}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email
@@ -345,9 +432,17 @@ const Connexion = () => {
               </div>
               <button
                 onClick={handleLoginSubmit}
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md hover:shadow-lg"
+                disabled={isSubmitting || isLoading}
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Se connecter
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Connexion en cours...
+                  </>
+                ) : (
+                  "Se connecter"
+                )}
               </button>
             </div>
           ) : (
@@ -356,6 +451,16 @@ const Connexion = () => {
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
                 Créer un compte
               </h2>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+                  {success}
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Email
@@ -482,8 +587,8 @@ const Connexion = () => {
               </label>
               <button
                 onClick={handleRegisterSubmit}
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
                 disabled={
+                  isSubmitting ||
                   !isValidEmail(registerEmail) ||
                   !hasMinLength ||
                   !hasLowercase ||
@@ -492,8 +597,16 @@ const Connexion = () => {
                   !hasSpecialChar ||
                   !passwordsMatch
                 }
+                className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                S'inscrire
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Inscription en cours...
+                  </>
+                ) : (
+                  "S'inscrire"
+                )}
               </button>
             </div>
           )}

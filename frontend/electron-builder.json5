@@ -1,9 +1,10 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
+  "appId": "com.gestmdp.app",
   "asar": true,
-  "productName": "YourAppName",
+  "productName": "Gestionnaire de Mots de Passe",
+  "icon": "favicon.ico",
   "directories": {
     "output": "release/${version}"
   },
@@ -15,7 +16,13 @@
     "target": [
       "dmg"
     ],
-    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    "protocols": [
+      {
+        "name": "Gestionnaire de Mots de Passe",
+        "schemes": ["gestmdp"]
+      }
+    ]
   },
   "win": {
     "target": [
@@ -26,7 +33,13 @@
         ]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+    "protocols": [
+      {
+        "name": "Gestionnaire de Mots de Passe",
+        "schemes": ["gestmdp"]
+      }
+    ]
   },
   "nsis": {
     "oneClick": false,
@@ -38,6 +51,12 @@
     "target": [
       "AppImage"
     ],
-    "artifactName": "${productName}-Linux-${version}.${ext}"
+    "artifactName": "${productName}-Linux-${version}.${ext}",
+    "protocols": [
+      {
+        "name": "Gestionnaire de Mots de Passe",
+        "schemes": ["gestmdp"]
+      }
+    ]
   }
 }

@@ -19,6 +19,11 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     return ipcRenderer.invoke(channel, ...omit)
   },
 
-  // You can expose other APTs you need here.
-  // ...
+  // Deep link handling
+  onDeepLinkResetPassword: (callback: (data: { token: string; csrf: string }) => void) => {
+    ipcRenderer.on('deep-link-reset-password', (_event, data) => callback(data))
+  },
+  removeDeepLinkResetPasswordListener: () => {
+    ipcRenderer.removeAllListeners('deep-link-reset-password')
+  }
 })

@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modèle utilisateur avec authentification sécurisée
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  // Le mot de passe sera haché avec bcrypt/argon2
+  password  String
+  // Clé de chiffrement unique pour chaque utilisateur
+  encryptionKey String
+  // Données de sécurité
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+  
+  // Relations
+  passwords PasswordEntry[]
+  sessions  UserSession[]
+  passwordResetTokens PasswordResetToken[]
+  
+  @@map("users")
+}
+
+// Entrées de mots de passe chiffrées
+model PasswordEntry {
+  id          String   @id @default(cuid())
+  // Titre non chiffré pour la recherche
+  title       String
+  // URL non chiffrée pour la catégorisation
+  url         String?
+  // Données chiffrées (mot de passe, nom d'utilisateur, notes)
+  encryptedData String
+  // Vecteur d'initialisation pour le chiffrement
+  iv          String
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("password_entries")
+}
+
+// Sessions utilisateur pour la sécurité
+model UserSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  // Adresse IP et User-Agent pour la sécurité
+  ipAddress String
+  userAgent String
+  // Expiration
+  expiresAt DateTime
+  // Option "rester connecté"
+  rememberMe Boolean @default(false)
+  // Timestamps
+  createdAt DateTime @default(now())
+  
+  // Relations
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_sessions")
+}
+
+// Logs de sécurité pour audit
+model SecurityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // "LOGIN", "LOGOUT", "PASSWORD_CREATED", "PASSWORD_UPDATED", etc.
+  ipAddress String
+  userAgent String
+  success   Boolean
+  details   String?  // Détails supplémentaires
+  createdAt DateTime @default(now())
+
+  @@map("security_logs")
+}
+
+// Tokens de réinitialisation de mot de passe
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  email     String
+  // Token CSRF pour la sécurité
+  csrfToken String
+  // Expiration du token (15 minutes par défaut)
+  expiresAt DateTime
+  // Utilisé ou non
+  used      Boolean  @default(false)
+  // Adresse IP de la demande
+  ipAddress String
+  // User-Agent de la demande
+  userAgent String
+  // Timestamps
+  createdAt DateTime @default(now())
+  usedAt    DateTime?
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
