@@ -4,7 +4,6 @@
   "appId": "com.gestmdp.app",
   "asar": true,
   "productName": "CodePass",
-  "icon": "favicon.ico",
   "directories": {
     "output": "release/${version}"
   },
@@ -49,9 +48,10 @@
   },
   "linux": {
     "target": [
-      "AppImage"
+      "tar.gz"
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}",
+    "category": "Utility",
     "protocols": [
       {
         "name": "CodePass",
