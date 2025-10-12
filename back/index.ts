@@ -98,25 +98,6 @@ app.use(validateUrlParams);
 // Middleware de limitation de taux global
 app.use(generalRateLimit);
 
-// Middleware de monitoring (UN SEUL middleware de monitoring)
-// app.use(requestMonitor);
-// app.use(databaseMonitor);
-// app.use(systemMonitor);
-
-// Middleware d'optimisation (UN SEUL middleware d'optimisation)
-// app.use(smartCompression);
-// app.use(responseCache(300)); // Cache 5 minutes
-// app.use(autoPagination(20, 100)); // 20 par défaut, 100 max
-// app.use(responseFormatter);
-// app.use(responseSizeLimit(5 * 1024 * 1024)); // 5MB max (réduire)
-// app.use(sanitizeResponse);
-// app.use(queryCache(300)); // Cache 5 minutes
-// app.use(databasePerformanceMonitor);
-// app.use(resourceLimiter(100)); // 100 requêtes concurrentes max (réduire)
-
-// Middleware de logging (UN SEUL middleware de logging)
-// app.use(advancedRequestLogger);
-
 // Routes de santé et monitoring (sans authentification)
 app.get('/health', getHealthStatus);
 app.get('/metrics', getSystemMetrics);
