@@ -84,21 +84,18 @@ export class EmailService {
    * Envoie un email de réinitialisation de mot de passe
    */
   async sendPasswordResetEmail(email: string, token: string, csrfToken: string): Promise<{ success: boolean; message: string }> {
-    // URL pour ouvrir l'application Electron
-    const electronUrl = `gestmdp://reset-password?token=${token}&csrf=${csrfToken}`;
-    // URL de fallback pour le navigateur web
-    const webUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}&csrf=${csrfToken}`;
+    // URL de la page web de réinitialisation (servie par le backend)
+    const backendUrl = process.env.BACKEND_URL || 'https://gestion-mdp.codepath.fr';
+    const webUrl = `${backendUrl}/reset-password.html?token=${token}&csrf=${csrfToken}`;
     
-    // En mode développement, utiliser le lien web comme lien principal
-    const isDevelopment = process.env.NODE_ENV === 'development';
-    const primaryUrl = isDevelopment ? webUrl : electronUrl;
-    const secondaryUrl = isDevelopment ? electronUrl : webUrl;
+    // Utiliser l'URL web comme lien principal
+    const primaryUrl = webUrl;
     
     const content: EmailContent = {
       to: email,
       subject: 'Réinitialisation de votre mot de passe - Codepass',
-      html: this.generatePasswordResetHtml(primaryUrl, secondaryUrl, isDevelopment),
-      text: this.generatePasswordResetText(primaryUrl, secondaryUrl, isDevelopment)
+      html: this.generatePasswordResetHtml(primaryUrl),
+      text: this.generatePasswordResetText(primaryUrl)
     };
 
     return this.sendEmail(content);
@@ -107,7 +104,7 @@ export class EmailService {
   /**
    * Génère le HTML pour l'email de réinitialisation
    */
-  private generatePasswordResetHtml(primaryUrl: string, secondaryUrl: string, isDevelopment: boolean = false): string {
+  private generatePasswordResetHtml(primaryUrl: string): string {
     return `
       <!DOCTYPE html>
       <html lang="fr">
@@ -141,8 +138,7 @@ export class EmailService {
             </div>
             
             <p style="text-align: center; margin: 20px 0;">
-              <small>${isDevelopment ? 'Mode développement - Lien web' : 'Si le bouton ne fonctionne pas, vous pouvez également utiliser le lien web :'}</small><br>
-              <a href="${secondaryUrl}" style="color: #007bff; text-decoration: underline;">${isDevelopment ? 'Lien application Electron' : 'Lien web de réinitialisation'}</a>
+              <small>Ce lien ouvrira la page de réinitialisation dans votre navigateur</small>
             </p>
             
             <div class="warning">
@@ -172,19 +168,16 @@ export class EmailService {
   /**
    * Génère le texte pour l'email de réinitialisation
    */
-  private generatePasswordResetText(primaryUrl: string, secondaryUrl: string, isDevelopment: boolean = false): string {
+  private generatePasswordResetText(primaryUrl: string): string {
     return `
       Réinitialisation de votre mot de passe - Codepass
       
       Bonjour,
       
-      Vous avez demandé la réinitialisation de votre mot de passe. Pour procéder à la réinitialisation, utilisez l'un des liens ci-dessous :
+      Vous avez demandé la réinitialisation de votre mot de passe. Pour procéder à la réinitialisation, utilisez le lien ci-dessous :
       
-      ${isDevelopment ? 'Lien web (mode développement) :' : 'Lien pour l\'application (recommandé) :'}
+      Lien pour réinitialiser votre mot de passe :
       ${primaryUrl}
-      
-      ${isDevelopment ? 'Lien application Electron :' : 'Lien web (fallback) :'}
-      ${secondaryUrl}
       
       IMPORTANT :
       - Ce lien expire dans 15 minutes

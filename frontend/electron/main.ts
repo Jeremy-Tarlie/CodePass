@@ -27,6 +27,45 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 let win: BrowserWindow | null
 let deepLinkUrl: string | null = null
 
+// Fonction pour gérer les arguments de ligne de commande
+function handleCommandLineArgs() {
+  const args = process.argv.slice(2);
+  
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--reset-password') {
+      const token = args[i + 1]?.replace('--token=', '');
+      const csrf = args[i + 2]?.replace('--csrf=', '');
+      
+      if (token && csrf) {
+        console.log('🔗 Arguments de réinitialisation reçus:', { token: token.substring(0, 10) + '...', csrf: csrf.substring(0, 10) + '...' });
+        
+        if (win) {
+          // Envoyer directement les données au renderer
+          win.webContents.send('deep-link-reset-password', { token, csrf });
+          
+          // Naviguer vers la page de réinitialisation
+          const resetUrl = VITE_DEV_SERVER_URL
+            ? `${VITE_DEV_SERVER_URL}/reset-password?token=${token}&csrf=${csrf}`
+            : `file://${path.join(RENDERER_DIST, 'index.html')}#/reset-password?token=${token}&csrf=${csrf}`;
+          
+          console.log('🔄 Redirection vers:', resetUrl);
+          if (win?.webContents.getURL().includes('index.html')) {
+            win.webContents.executeJavaScript(`
+              window.location.hash = '/reset-password?token=${token}&csrf=${csrf}';
+            `);
+          } else {
+            win?.loadURL(resetUrl);
+          }
+        } else {
+          // Stocker les données pour plus tard
+          deepLinkUrl = `reset-password?token=${token}&csrf=${csrf}`;
+        }
+        break;
+      }
+    }
+  }
+}
+
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
@@ -41,7 +80,30 @@ function createWindow() {
     
     // Si on a un deep link en attente, le traiter maintenant
     if (deepLinkUrl) {
-      handleDeepLink(deepLinkUrl)
+      if (deepLinkUrl.startsWith('gestmdp://')) {
+        handleDeepLink(deepLinkUrl)
+      } else {
+        // C'est un argument de ligne de commande
+        const [, params] = deepLinkUrl.split('?')
+        const urlParams = new URLSearchParams(params)
+        const token = urlParams.get('token')
+        const csrf = urlParams.get('csrf')
+        
+        if (token && csrf) {
+          win?.webContents.send('deep-link-reset-password', { token, csrf })
+          const resetUrl = VITE_DEV_SERVER_URL
+            ? `${VITE_DEV_SERVER_URL}/reset-password?token=${token}&csrf=${csrf}`
+            : `file://${path.join(RENDERER_DIST, 'index.html')}#/reset-password?token=${token}&csrf=${csrf}`
+          
+          if (win?.webContents.getURL().includes('index.html')) {
+            win.webContents.executeJavaScript(`
+              window.location.hash = '/reset-password?token=${token}&csrf=${csrf}';
+            `);
+          } else {
+            win?.loadURL(resetUrl)
+          }
+        }
+      }
       deepLinkUrl = null
     }
   })
@@ -55,28 +117,65 @@ function createWindow() {
 }
 
 function handleDeepLink(url: string) {
-  console.log('Deep link reçu:', url)
+  console.log('🔗 Deep link reçu:', url)
   
-  // Extraire les paramètres de l'URL
-  const urlObj = new URL(url)
-  const pathname = urlObj.pathname
-  const searchParams = urlObj.searchParams
-  
-  if (pathname === '/reset-password') {
-    const token = searchParams.get('token')
-    const csrf = searchParams.get('csrf')
+  try {
+    // Extraire les paramètres de l'URL
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname
+    const searchParams = urlObj.searchParams
     
-    if (token && csrf) {
-      // Envoyer les paramètres au renderer
-      win?.webContents.send('deep-link-reset-password', { token, csrf })
+    console.log('📋 Analyse du deep link:', {
+      protocol: urlObj.protocol,
+      hostname: urlObj.hostname,
+      pathname: pathname,
+      searchParams: Object.fromEntries(searchParams.entries())
+    })
+    
+    if (pathname === '/reset-password') {
+      const token = searchParams.get('token')
+      const csrf = searchParams.get('csrf')
       
-      // Rediriger vers la page de réinitialisation
-      const resetUrl = VITE_DEV_SERVER_URL 
-        ? `${VITE_DEV_SERVER_URL}/reset-password?token=${token}&csrf=${csrf}`
-        : `file://${path.join(RENDERER_DIST, 'index.html')}#/reset-password?token=${token}&csrf=${csrf}`
-      
-      win?.loadURL(resetUrl)
+      if (token && csrf) {
+        console.log('✅ Tokens extraits:', { token: token.substring(0, 10) + '...', csrf: csrf.substring(0, 10) + '...' })
+        
+        // S'assurer que la fenêtre est visible et au premier plan
+        if (win) {
+          if (win.isMinimized()) {
+            win.restore()
+          }
+          win.focus()
+          win.show()
+        }
+        
+        // Envoyer les paramètres au renderer
+        win?.webContents.send('deep-link-reset-password', { token, csrf })
+        
+        // Rediriger vers la page de réinitialisation
+        const resetUrl = VITE_DEV_SERVER_URL 
+          ? `${VITE_DEV_SERVER_URL}/reset-password?token=${token}&csrf=${csrf}`
+          : `file://${path.join(RENDERER_DIST, 'index.html')}#/reset-password?token=${token}&csrf=${csrf}`
+        
+        console.log('🔄 Redirection vers:', resetUrl)
+        
+        // Si l'application est déjà chargée, naviguer vers la route
+        if (win?.webContents.getURL().includes('index.html')) {
+          // L'application est déjà chargée, on peut naviguer directement
+          win.webContents.executeJavaScript(`
+            window.location.hash = '/reset-password?token=${token}&csrf=${csrf}';
+          `);
+        } else {
+          // Charger l'application avec la route
+          win?.loadURL(resetUrl)
+        }
+      } else {
+        console.error('❌ Tokens manquants dans le deep link')
+      }
+    } else {
+      console.log('ℹ️  Deep link non reconnu, pathname:', pathname)
     }
+  } catch (error) {
+    console.error('❌ Erreur lors du traitement du deep link:', error)
   }
 }
 
@@ -101,7 +200,7 @@ app.on('activate', () => {
 // Configuration du protocole personnalisé - DOIT être fait AVANT app.whenReady()
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: 'codePass',
+    scheme: 'gestmdp',
     privileges: {
       standard: true,
       secure: true,
@@ -113,7 +212,10 @@ protocol.registerSchemesAsPrivileged([
   }
 ])
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow();
+  handleCommandLineArgs();
+})
 
 // Gestion des deep links sur macOS
 app.on('open-url', (event, url) => {

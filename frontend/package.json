@@ -24,6 +24,7 @@
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "dotenv": "^16.4.5",
     "electron": "^38.2.0",
     "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",

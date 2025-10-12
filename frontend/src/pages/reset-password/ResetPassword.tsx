@@ -48,9 +48,18 @@ const ResetPassword = () => {
   useEffect(() => {
     if (window.ipcRenderer?.onDeepLinkResetPassword) {
       window.ipcRenderer.onDeepLinkResetPassword((data: { token: string; csrf: string }) => {
-        console.log('Deep link reçu:', data);
+        console.log('🔗 Deep link reçu dans React:', data);
+        
+        // Réinitialiser les états
+        setError("");
+        setSuccess("");
+        setIsValidating(true);
+        
+        // Mettre à jour les tokens
         setToken(data.token);
         setCsrfToken(data.csrf);
+        
+        // Valider le token
         validateToken(data.token, data.csrf);
       });
     }

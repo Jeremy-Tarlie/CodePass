@@ -83,6 +83,9 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '5mb' })); // Réduire la limite
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
+// Servir les fichiers statiques (pour reset-password.html)
+app.use(express.static('public'));
+
 // Middleware de sécurité
 app.use(validateIP);
 app.use(cleanupSessions);
@@ -103,6 +106,14 @@ app.get('/health', getHealthStatus);
 app.get('/metrics', getSystemMetrics);
 app.get('/logs/metrics', getLoggingMetrics);
 app.post('/alerts/:alertId/resolve', resolveAlert);
+
+// Route pour la configuration API (pour reset-password.html)
+app.get('/api/config', (_req, res) => {
+  res.json({
+    API_BASE_URL: process.env.BACKEND_URL || 'https://gestion-mdp.codepath.fr',
+    API_KEY: process.env.API_KEY
+  });
+});
 
 // Routes API avec authentification par clé API
 app.use('/api/auth', 
