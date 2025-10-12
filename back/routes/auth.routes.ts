@@ -1,17 +1,20 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { authRateLimit, generalRateLimit } from '../middleware/security.middleware';
+import { validateApiKey } from '../middleware/apiKey.middleware';
 
 const router = Router();
 
 // Routes d'authentification avec limitation de taux
 router.post('/register', 
+  validateApiKey,
   authRateLimit,
   AuthController.getRegisterValidationRules(),
   AuthController.register
 );
 
 router.post('/login', 
+  validateApiKey,
   authRateLimit,
   AuthController.getLoginValidationRules(),
   AuthController.login

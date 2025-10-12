@@ -143,11 +143,6 @@ async function resetPassword(newPassword) {
 
         if (data.success) {
             showAlert('Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.', 'success');
-            
-            // Rediriger vers la page de connexion après 3 secondes
-            setTimeout(() => {
-                window.location.href = '/connexion';
-            }, 3000);
         } else {
             showAlert(data.message || 'Erreur lors de la réinitialisation du mot de passe.');
         }
