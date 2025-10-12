@@ -9,35 +9,71 @@ Ce document explique comment configurer et utiliser le système d'authentificati
 npm run generate-api-key
 ```
 
+Le script génère automatiquement une clé API sécurisée de 256 bits et l'affiche dans la console.
+
 ### Méthode 2 : Génération manuelle
 ```javascript
 const crypto = require('crypto');
 const apiKey = crypto.randomBytes(32).toString('hex');
-console.log(apiKey);
+console.log('Clé API générée:', apiKey);
+console.log('Longueur:', apiKey.length, 'caractères');
+```
+
+### Méthode 3 : Génération avec validation
+```javascript
+const crypto = require('crypto');
+
+function generateSecureApiKey() {
+  const apiKey = crypto.randomBytes(32).toString('hex');
+  
+  // Validation de la clé générée
+  if (apiKey.length !== 64) {
+    throw new Error('Clé API invalide');
+  }
+  
+  console.log('✅ Clé API sécurisée générée');
+  console.log('Clé:', apiKey);
+  console.log('Longueur:', apiKey.length, 'caractères (256 bits)');
+  
+  return apiKey;
+}
+
+generateSecureApiKey();
 ```
 
 ## ⚙️ Configuration
 
 ### Backend (.env)
 ```env
-# Clé API pour l'authentification
-API_KEY="votre_cle_api_generee_ici"
+# Clé API pour l'authentification (256 bits)
+API_KEY="votre_cle_api_generee_ici_64_caracteres_hexadecimaux"
 
 # Clé API secondaire (optionnelle, pour la rotation)
 API_KEY_SECONDARY=""
 
-# Autres variables...
-DATABASE_URL="postgresql://..."
-JWT_SECRET="..."
+# Autres variables de sécurité
+DATABASE_URL="postgresql://username:password@localhost:5432/gestion_mdp"
+JWT_SECRET="votre_cle_jwt_secrete_tres_longue"
+SESSION_SECRET="votre_cle_session_secrete"
+ENCRYPTION_KEY="votre_cle_chiffrement_256_bits"
+
+# Configuration serveur
+PORT=3001
+NODE_ENV="development"
+CORS_ORIGIN="http://localhost:5173"
 ```
 
 ### Frontend (.env)
 ```env
 # Même clé API que le backend
-VITE_API_KEY="votre_cle_api_generee_ici"
+VITE_API_KEY="votre_cle_api_generee_ici_64_caracteres_hexadecimaux"
 
 # URL du backend
 VITE_API_URL="http://localhost:3001"
+
+# Configuration application
+VITE_APP_NAME="Gestionnaire de Mots de Passe"
+VITE_APP_VERSION="1.0.0"
 ```
 
 ## 🚀 Utilisation
@@ -47,18 +83,39 @@ VITE_API_URL="http://localhost:3001"
 #### JavaScript/Fetch (Frontend)
 ```javascript
 const apiKey = import.meta.env.VITE_API_KEY;
+const apiUrl = import.meta.env.VITE_API_URL;
 
-fetch('http://localhost:3001/api/auth/login', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-API-Key': apiKey
-  },
-  body: JSON.stringify({
-    email: 'user@example.com',
-    password: 'password123'
-  })
-});
+// Fonction utilitaire pour les requêtes API
+async function apiRequest(endpoint, options = {}) {
+  const response = await fetch(`${apiUrl}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': apiKey,
+      ...options.headers
+    }
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Erreur API: ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+// Exemple d'utilisation
+try {
+  const result = await apiRequest('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: 'user@example.com',
+      password: 'password123'
+    })
+  });
+  console.log('Connexion réussie:', result);
+} catch (error) {
+  console.error('Erreur de connexion:', error);
+}
 ```
 
 #### Axios
@@ -66,35 +123,61 @@ fetch('http://localhost:3001/api/auth/login', {
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_URL + '/api',
   headers: {
-    'X-API-Key': process.env.API_KEY
+    'Content-Type': 'application/json',
+    'X-API-Key': import.meta.env.VITE_API_KEY
   }
 });
 
+// Intercepteur pour la gestion des erreurs
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error('Clé API invalide ou manquante');
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Utilisation
-api.post('/auth/login', {
-  email: 'user@example.com',
-  password: 'password123'
-});
+try {
+  const response = await api.post('/auth/login', {
+    email: 'user@example.com',
+    password: 'password123'
+  });
+  console.log('Connexion réussie:', response.data);
+} catch (error) {
+  console.error('Erreur:', error.response?.data || error.message);
+}
 ```
 
 #### cURL
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
+# Test de connexion
+curl -X POST http://localhost:3001/api/auth/login \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: votre_cle_api" \
+  -H "X-API-Key: votre_cle_api_64_caracteres" \
   -d '{"email":"user@example.com","password":"password123"}'
+
+# Test de santé (sans clé API)
+curl http://localhost:3001/health
+
+# Test avec clé invalide
+curl -H "X-API-Key: invalid_key" http://localhost:3001/api/auth/verify
 ```
 
 ## 🔒 Sécurité
 
 ### Fonctionnalités de Sécurité Implémentées
 
-1. **Comparaison Timing-Safe** : Protection contre les attaques par timing
-2. **Logging des Accès** : Tous les accès sont loggés avec masquage de la clé
-3. **Rate Limiting** : Limitation du nombre de requêtes
+1. **Comparaison Timing-Safe** : Protection contre les attaques par timing avec `crypto.timingSafeEqual()`
+2. **Logging des Accès** : Tous les accès sont loggés avec masquage de la clé (8 premiers caractères)
+3. **Rate Limiting** : Limitation du nombre de requêtes (100 req/15min)
 4. **Validation Stricte** : Vérification de la présence et validité de la clé
+5. **Rotation des Clés** : Support de clés secondaires pour la rotation sans interruption
+6. **Headers Sécurisés** : Validation du header `X-API-Key` sur toutes les routes protégées
 
 ### Bonnes Pratiques
 

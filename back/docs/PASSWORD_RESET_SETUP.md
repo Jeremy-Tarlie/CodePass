@@ -23,6 +23,12 @@ FRONTEND_URL=http://localhost:5173
 # Configuration de sécurité
 PASSWORD_RESET_TOKEN_EXPIRATION=15 # minutes
 PASSWORD_RESET_MAX_ATTEMPTS=3 # tentatives par heure
+
+# Clé API (requise pour toutes les requêtes)
+API_KEY="votre_cle_api_256_bits"
+
+# Base de données (requise pour stocker les tokens)
+DATABASE_URL="postgresql://username:password@localhost:5432/gestion_mdp"
 ```
 
 ### Configuration Gmail
@@ -62,7 +68,7 @@ SMTP_PASS=votre_secret_key
 
 **Headers :**
 ```
-X-API-Key: votre_cle_api
+X-API-Key: votre_cle_api_256_bits
 Content-Type: application/json
 ```
 
@@ -81,9 +87,22 @@ Content-Type: application/json
 }
 ```
 
+**Exemple avec cURL :**
+```bash
+curl -X POST http://localhost:3001/api/password-reset/request \
+  -H "X-API-Key: votre_cle_api" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com"}'
+```
+
 ### 2. Validation du Token
 
 **Endpoint :** `GET /api/password-reset/validate?token=...&csrf=...`
+
+**Headers :**
+```
+X-API-Key: votre_cle_api_256_bits
+```
 
 **Réponse :**
 ```json
@@ -94,9 +113,21 @@ Content-Type: application/json
 }
 ```
 
+**Exemple avec cURL :**
+```bash
+curl -X GET "http://localhost:3001/api/password-reset/validate?token=ABC123&csrf=XYZ789" \
+  -H "X-API-Key: votre_cle_api"
+```
+
 ### 3. Réinitialisation du Mot de Passe
 
 **Endpoint :** `POST /api/password-reset/reset`
+
+**Headers :**
+```
+X-API-Key: votre_cle_api_256_bits
+Content-Type: application/json
+```
 
 **Body :**
 ```json
@@ -115,31 +146,53 @@ Content-Type: application/json
 }
 ```
 
+**Exemple avec cURL :**
+```bash
+curl -X POST http://localhost:3001/api/password-reset/reset \
+  -H "X-API-Key: votre_cle_api" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "token_de_reinitialisation",
+    "csrfToken": "token_csrf",
+    "newPassword": "NouveauMotDePasse123!"
+  }'
+```
+
 ## 🔒 Sécurité
 
 ### Fonctionnalités de Sécurité
 
 1. **Tokens Sécurisés** :
-   - Tokens de 256 bits générés cryptographiquement
+   - Tokens de 256 bits générés cryptographiquement avec `crypto.randomBytes()`
    - Expiration automatique (15 minutes par défaut)
    - Usage unique (invalidation après utilisation)
+   - Stockage sécurisé en base de données
 
 2. **Protection CSRF** :
-   - Token CSRF séparé pour chaque demande
-   - Validation stricte des tokens
+   - Token CSRF séparé pour chaque demande (256 bits)
+   - Validation timing-safe avec `crypto.timingSafeEqual()`
+   - Double protection : token de réinitialisation + token CSRF
 
 3. **Rate Limiting** :
    - Maximum 3 tentatives par heure par email
    - Protection contre les attaques par force brute
+   - Blocage temporaire en cas de dépassement
 
 4. **Logging de Sécurité** :
-   - Tous les événements sont loggés
+   - Tous les événements sont loggés avec métadonnées
    - Détection des tentatives d'intrusion
-   - Traçabilité complète
+   - Traçabilité complète (IP, User-Agent, timestamp)
+   - Alertes automatiques en cas d'activité suspecte
 
 5. **Invalidation des Sessions** :
    - Toutes les sessions sont invalidées après réinitialisation
-   - Forçage de reconnexion
+   - Forçage de reconnexion avec nouveau mot de passe
+   - Nettoyage automatique des sessions expirées
+
+6. **Validation des Données** :
+   - Validation stricte des mots de passe (8+ caractères, majuscule, minuscule, chiffre, caractère spécial)
+   - Sanitisation des entrées utilisateur
+   - Protection contre les injections
 
 ### Bonnes Pratiques
 

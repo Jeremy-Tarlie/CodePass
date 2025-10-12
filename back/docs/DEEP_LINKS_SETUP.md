@@ -91,12 +91,25 @@ Les emails de réinitialisation contiennent deux types de liens :
 
 ### Détection du Mode
 
-Le service email détecte automatiquement le mode :
+Le service email détecte automatiquement le mode et génère les liens appropriés :
 
 ```typescript
 const isDevelopment = process.env.NODE_ENV === 'development';
+const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// Génération des URLs
+const electronUrl = `gestmdp://reset-password?token=${token}&csrf=${csrfToken}`;
+const webUrl = `${baseUrl}/reset-password?token=${token}&csrf=${csrfToken}`;
+
+// Sélection de l'URL principale selon l'environnement
 const primaryUrl = isDevelopment ? webUrl : electronUrl;
 const secondaryUrl = isDevelopment ? electronUrl : webUrl;
+
+// Dans l'email, les deux liens sont fournis
+const emailContent = `
+  <a href="${primaryUrl}" style="primary-button">Réinitialiser mon mot de passe</a>
+  <p>Si le bouton ne fonctionne pas, cliquez sur ce lien : <a href="${secondaryUrl}">${secondaryUrl}</a></p>
+`;
 ```
 
 ## 🔄 Flux Complet
@@ -169,28 +182,47 @@ spawn('xdg-open', [deepLink]);
 ### Validation des Tokens
 
 ```typescript
-// Validation côté serveur
-const isValidToken = await validatePasswordResetToken(token, csrf);
-if (!isValidToken) {
-  return res.status(400).json({ 
-    success: false, 
-    message: 'Token invalide ou expiré' 
+// Validation côté serveur avec vérification complète
+const validatePasswordResetToken = async (token: string, csrfToken: string) => {
+  const tokenRecord = await prisma.passwordResetToken.findUnique({
+    where: { token },
+    include: { user: true }
   });
-}
+  
+  if (!tokenRecord || tokenRecord.used || tokenRecord.expiresAt < new Date()) {
+    return { valid: false, error: 'Token invalide ou expiré' };
+  }
+  
+  // Vérification du token CSRF avec comparaison timing-safe
+  const isValidCsrf = crypto.timingSafeEqual(
+    Buffer.from(csrfToken, 'hex'),
+    Buffer.from(tokenRecord.csrfToken, 'hex')
+  );
+  
+  if (!isValidCsrf) {
+    return { valid: false, error: 'Token CSRF invalide' };
+  }
+  
+  return { valid: true, user: tokenRecord.user };
+};
 ```
 
 ### Protection CSRF
 
-- Chaque token de réinitialisation a un token CSRF associé
+- Chaque token de réinitialisation a un token CSRF associé (256 bits)
 - Les deux tokens sont requis pour la validation
+- Validation timing-safe pour éviter les attaques par timing
 - Les tokens expirent après 15 minutes
 - Usage unique : les tokens sont invalidés après utilisation
+- Traçabilité complète : IP et User-Agent enregistrés
 
 ### Rate Limiting
 
 - Maximum 3 tentatives de réinitialisation par heure par email
-- Logs de sécurité pour toutes les tentatives
+- Logs de sécurité pour toutes les tentatives avec métadonnées
 - Blocage temporaire en cas de dépassement
+- Détection automatique des patterns suspects
+- Alertes en temps réel pour les tentatives d'intrusion
 
 ## 🐛 Dépannage
 

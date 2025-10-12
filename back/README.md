@@ -93,12 +93,26 @@ npm start
 
 ### Authentification
 
+**Headers requis :** `X-API-Key: votre_cle_api`
+
 #### POST `/api/auth/register`
 Inscription d'un nouvel utilisateur
 ```json
 {
   "email": "user@example.com",
   "password": "MotDePasseSecurise123!"
+}
+```
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Utilisateur créé avec succès",
+  "user": {
+    "id": "user_id",
+    "email": "user@example.com"
+  }
 }
 ```
 
@@ -112,6 +126,20 @@ Connexion utilisateur
 }
 ```
 
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Connexion réussie",
+  "token": "jwt_token",
+  "refreshToken": "refresh_token",
+  "user": {
+    "id": "user_id",
+    "email": "user@example.com"
+  }
+}
+```
+
 #### POST `/api/auth/logout`
 Déconnexion (nécessite un token Bearer)
 
@@ -119,6 +147,8 @@ Déconnexion (nécessite un token Bearer)
 Vérification du token (nécessite un token Bearer)
 
 ### Réinitialisation de Mot de Passe
+
+**Headers requis :** `X-API-Key: votre_cle_api`
 
 #### POST `/api/password-reset/request`
 Demande de réinitialisation de mot de passe
@@ -128,12 +158,23 @@ Demande de réinitialisation de mot de passe
 }
 ```
 
-#### POST `/api/password-reset/validate`
-Validation du token de réinitialisation
+**Réponse :**
 ```json
 {
-  "token": "token_de_reinitialisation",
-  "csrf": "token_csrf"
+  "success": true,
+  "message": "Si cet email existe dans notre système, vous recevrez un email de réinitialisation."
+}
+```
+
+#### GET `/api/password-reset/validate?token=...&csrf=...`
+Validation du token de réinitialisation
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "valid": true,
+  "email": "user@example.com"
 }
 ```
 
@@ -142,24 +183,56 @@ Réinitialisation du mot de passe
 ```json
 {
   "token": "token_de_reinitialisation",
-  "csrf": "token_csrf",
+  "csrfToken": "token_csrf",
   "newPassword": "NouveauMotDePasse123!"
 }
 ```
 
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe."
+}
+```
+
+#### GET `/api/password-reset/test-email`
+Test de la configuration email (nécessite une clé API valide)
+
 #### POST `/api/password-reset/cleanup`
-Nettoyage des tokens expirés (admin)
+Nettoyage des tokens expirés (nécessite une clé API valide)
 
 ### Gestion des Mots de Passe
 
+**Headers requis :** `X-API-Key: votre_cle_api` + `Authorization: Bearer jwt_token`
+
 #### GET `/api/passwords`
-Récupérer tous les mots de passe de l'utilisateur (nécessite un token Bearer)
+Récupérer tous les mots de passe de l'utilisateur
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "passwords": [
+    {
+      "id": "password_id",
+      "title": "Mon Compte Gmail",
+      "url": "https://gmail.com",
+      "username": "mon.email@gmail.com",
+      "password": "MonMotDePasseGmail",
+      "notes": "Compte principal",
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    }
+  ]
+}
+```
 
 #### GET `/api/passwords/:id`
-Récupérer un mot de passe spécifique (nécessite un token Bearer)
+Récupérer un mot de passe spécifique
 
 #### POST `/api/passwords`
-Créer un nouveau mot de passe (nécessite un token Bearer)
+Créer un nouveau mot de passe
 ```json
 {
   "title": "Mon Compte Gmail",
@@ -170,28 +243,54 @@ Créer un nouveau mot de passe (nécessite un token Bearer)
 }
 ```
 
-#### PUT `/api/passwords/:id`
-Mettre à jour un mot de passe (nécessite un token Bearer)
-
-#### DELETE `/api/passwords/:id`
-Supprimer un mot de passe (nécessite un token Bearer)
-
-### Gestion des Clés API
-
-#### GET `/api/api-keys`
-Récupérer toutes les clés API de l'utilisateur (nécessite un token Bearer)
-
-#### POST `/api/api-keys`
-Créer une nouvelle clé API (nécessite un token Bearer)
+**Réponse :**
 ```json
 {
-  "name": "Clé pour application mobile",
-  "description": "Clé API pour l'application mobile"
+  "success": true,
+  "message": "Mot de passe créé avec succès",
+  "password": {
+    "id": "password_id",
+    "title": "Mon Compte Gmail",
+    "url": "https://gmail.com",
+    "username": "mon.email@gmail.com",
+    "password": "MonMotDePasseGmail",
+    "notes": "Compte principal",
+    "createdAt": "2024-01-15T10:30:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  }
 }
 ```
 
-#### DELETE `/api/api-keys/:id`
-Supprimer une clé API (nécessite un token Bearer)
+#### PUT `/api/passwords/:id`
+Mettre à jour un mot de passe
+
+#### DELETE `/api/passwords/:id`
+Supprimer un mot de passe
+
+### Monitoring et Santé
+
+#### GET `/health`
+Vérification de l'état de l'application (sans authentification)
+
+**Réponse :**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "uptime": 3600,
+  "database": "connected",
+  "version": "1.0.0"
+}
+```
+
+#### GET `/metrics`
+Métriques système (sans authentification)
+
+#### GET `/logs/metrics`
+Métriques de logging (sans authentification)
+
+#### POST `/alerts/:alertId/resolve`
+Résolution d'une alerte (sans authentification)
 
 ## 🔐 Sécurité
 
@@ -223,12 +322,14 @@ Supprimer une clé API (nécessite un token Bearer)
 ## 🛠️ Scripts Disponibles
 
 ```bash
-npm run dev          # Démarrage en mode développement
-npm run build        # Compilation TypeScript
-npm start           # Démarrage en mode production
-npm run prisma:generate  # Génération du client Prisma
-npm run prisma:migrate   # Application des migrations
-npm run prisma:studio    # Interface graphique Prisma
+npm run dev              # Démarrage en mode développement
+npm run build            # Compilation TypeScript
+npm start               # Démarrage en mode production
+npm run prisma:generate # Génération du client Prisma
+npm run prisma:migrate  # Application des migrations
+npm run prisma:studio   # Interface graphique Prisma
+npm run generate-api-key # Génération d'une clé API sécurisée
+npm run cleanup-tokens  # Nettoyage des tokens expirés
 ```
 
 ## 📊 Structure de la Base de Données
@@ -236,18 +337,19 @@ npm run prisma:studio    # Interface graphique Prisma
 ### Tables Principales
 
 - **users** : Informations utilisateur et clés de chiffrement
-- **password_entries** : Mots de passe chiffrés
-- **user_sessions** : Sessions actives
-- **security_logs** : Logs d'audit et sécurité
-- **password_reset_tokens** : Tokens de réinitialisation de mot de passe
-- **api_keys** : Clés API des utilisateurs
+- **password_entries** : Mots de passe chiffrés avec IV unique
+- **user_sessions** : Sessions actives avec option "rester connecté"
+- **security_logs** : Logs d'audit et sécurité complets
+- **password_reset_tokens** : Tokens de réinitialisation avec protection CSRF
 
 ### Sécurité des Données
 
-- Les mots de passe utilisateur sont hachés avec bcrypt
-- Les données sensibles sont chiffrées avec AES-256-GCM
-- Chaque utilisateur a sa propre clé de chiffrement
-- Les sessions sont validées et expirées automatiquement
+- Les mots de passe utilisateur sont hachés avec **Argon2** (OWASP recommandé)
+- Les données sensibles sont chiffrées avec **AES-256-GCM**
+- Chaque utilisateur a sa propre clé de chiffrement unique
+- Chaque mot de passe utilise un vecteur d'initialisation (IV) aléatoire
+- Les sessions sont validées avec IP et User-Agent
+- Les sessions expirent automatiquement (24h ou 30 jours avec "rester connecté")
 
 ## ⚠️ Recommandations de Sécurité
 

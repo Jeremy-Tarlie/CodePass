@@ -44,29 +44,38 @@ Bienvenue dans la documentation complète du Gestionnaire de Mots de Passe. Cett
 cd back
 npm install
 cp .env.example .env
-# Configurer .env
+# Configurer .env avec vos variables
 
 # Frontend
 cd frontend
 npm install
 cp .env.example .env
-# Configurer .env
+# Configurer .env avec vos variables
 ```
 
-### 2. Base de Données
+### 2. Génération des Clés de Sécurité
+```bash
+cd back
+# Générer une clé API sécurisée
+npm run generate-api-key
+
+# Copier la clé générée dans vos fichiers .env
+```
+
+### 3. Base de Données
 ```bash
 cd back
 npm run prisma:generate
 npm run prisma:migrate
 ```
 
-### 3. Démarrage
+### 4. Démarrage
 ```bash
 # Backend
 cd back
 npm run dev
 
-# Frontend
+# Frontend (Web)
 cd frontend
 npm run dev
 
@@ -78,47 +87,61 @@ npm run electron:dev
 ## 📋 Checklist de Configuration
 
 ### Backend
-- [ ] Variables d'environnement configurées
-- [ ] Base de données PostgreSQL accessible
-- [ ] Clé API générée et configurée
-- [ ] Service SMTP configuré
-- [ ] Migrations appliquées
+- [ ] Variables d'environnement configurées (DATABASE_URL, API_KEY, JWT_SECRET, etc.)
+- [ ] Base de données PostgreSQL accessible et configurée
+- [ ] Clé API générée et configurée (256 bits)
+- [ ] Service SMTP configuré et testé
+- [ ] Migrations Prisma appliquées
+- [ ] Scripts de maintenance configurés
 
 ### Frontend
-- [ ] Variables d'environnement configurées
+- [ ] Variables d'environnement configurées (VITE_API_URL, VITE_API_KEY)
 - [ ] URL du backend configurée
-- [ ] Clé API configurée
+- [ ] Clé API configurée (identique au backend)
 - [ ] Application Electron testée
+- [ ] Deep links fonctionnels
 
 ### Sécurité
-- [ ] Clés de chiffrement fortes générées
-- [ ] Rate limiting configuré
-- [ ] Headers de sécurité activés
-- [ ] Logs de sécurité configurés
+- [ ] Clés de chiffrement fortes générées (256 bits minimum)
+- [ ] Rate limiting configuré (100 req/15min, 5 auth/15min, 3 reset/heure)
+- [ ] Headers de sécurité activés (Helmet.js)
+- [ ] Logs de sécurité configurés et surveillés
+- [ ] Validation des données implémentée
+- [ ] Protection CSRF activée
 
 ## 🔍 Dépannage
 
 ### Problèmes Courants
 
 #### Connexion Backend
-- Vérifiez que PostgreSQL est démarré
-- Vérifiez l'URL de connexion dans `.env`
-- Vérifiez que la base de données existe
+- Vérifiez que PostgreSQL est démarré et accessible
+- Vérifiez l'URL de connexion dans `.env` (DATABASE_URL)
+- Vérifiez que la base de données existe et que les migrations sont appliquées
+- Vérifiez que la clé API est configurée et valide
 
 #### Connexion Frontend
 - Vérifiez que le backend est démarré sur le port 3001
 - Vérifiez la configuration `VITE_API_URL` et `VITE_API_KEY`
-- Vérifiez les logs de la console
+- Vérifiez que la clé API est identique entre frontend et backend
+- Vérifiez les logs de la console et les erreurs réseau
 
 #### Deep Links Electron
 - Vérifiez que l'application Electron est installée
+- Vérifiez que le protocole `gestmdp://` est enregistré
 - Testez avec le lien web de fallback
-- Vérifiez les logs de l'application
+- Vérifiez les logs de l'application Electron
 
 #### Emails
-- Vérifiez la configuration SMTP
-- Testez avec un service comme Gmail
+- Vérifiez la configuration SMTP (SMTP_HOST, SMTP_USER, SMTP_PASS)
+- Testez avec un service comme Gmail (mot de passe d'application)
 - Vérifiez les logs du service email
+- Testez l'endpoint `/api/password-reset/test-email`
+
+#### Sécurité
+- Vérifiez que toutes les clés sont générées et configurées
+- Vérifiez que le rate limiting fonctionne
+- Vérifiez que les logs de sécurité sont générés
+- Testez les endpoints de monitoring (`/health`, `/metrics`)
 
 ## 📞 Support
 
