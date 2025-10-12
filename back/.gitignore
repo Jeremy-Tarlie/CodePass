@@ -4,3 +4,8 @@ node_modules
 
 /generated/prisma
 /prisma/migrations
+
+# Docker
+docker-compose.*
+Dockerfile
+Dockerfile.*

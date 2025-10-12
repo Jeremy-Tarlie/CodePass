@@ -12,8 +12,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || API_CONFIG.BASE_URL;
-  const API_KEY = import.meta.env.VITE_API_KEY || API_CONFIG.API_KEY;
+  const API_URL = API_CONFIG.BASE_URL;
+  const API_KEY = API_CONFIG.API_KEY;
 
   const verifyToken = useCallback(async (): Promise<boolean> => {
     try {

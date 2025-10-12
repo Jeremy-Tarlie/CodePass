@@ -101,7 +101,7 @@ app.on('activate', () => {
 // Configuration du protocole personnalisé - DOIT être fait AVANT app.whenReady()
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: 'gestmdp',
+    scheme: 'codePass',
     privileges: {
       standard: true,
       secure: true,

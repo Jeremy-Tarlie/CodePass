@@ -97,8 +97,8 @@ const Connexion = () => {
     setError("");
     
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const API_KEY = import.meta.env.VITE_API_KEY || 'a16c198828b297a3588020685168cb5981037be330731464ab9555dfd47a0f15';
+      const API_URL = import.meta.env.VITE_API_URL;
+      const API_KEY = import.meta.env.VITE_API_KEY;
       
       const response = await fetch(`${API_URL}/api/password-reset/request`, {
         method: 'POST',

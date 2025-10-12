@@ -318,7 +318,7 @@ const Accueil = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Lock className="text-indigo-600" /> CodePath
+                <Lock className="text-indigo-600" /> CodePass
               </h1>
               <p className="text-sm text-gray-600 mt-1">
                 Gestionnaire de mots de passe sécurisé

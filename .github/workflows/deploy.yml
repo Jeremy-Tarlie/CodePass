@@ -1,0 +1,84 @@
+name: Build and Deploy to DockerHub and Server
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE_NAME: gest-mdp-backend
+  DOCKER_TAG: latest
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./back
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  deploy-to-server:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          # Aller dans le répertoire de l'application
+          cd ${{ secrets.SERVER_APP_PATH }} || echo "⚠️ Répertoire de l'application non trouvé, utilisez le répertoire courant"
+          
+          # Arrêter les services existants
+          echo "🛑 Arrêt des services existants..."
+          docker-compose down || true
+          
+          # Se connecter à DockerHub
+          echo "🔐 Connexion à DockerHub..."
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          
+          # Pull de la nouvelle image
+          echo "📥 Téléchargement de la nouvelle image..."
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }}
+          
+          # Nettoyer les images inutilisées
+          echo "🧹 Nettoyage des images inutilisées..."
+          docker image prune -f
+          
+          # Démarrer les services avec docker-compose
+          echo "🚀 Démarrage des services avec docker-compose..."
+          docker-compose up -d
+          
+          # Vérifier que les services fonctionnent
+          echo "✅ Vérification du déploiement..."
+          sleep 10
+          docker-compose ps
+          
+          # Vérifier les logs de l'application
+          echo "📋 Logs de l'application (dernières 20 lignes):"
+          docker-compose logs --tail=20 back
+          
+          echo "🎉 Déploiement terminé avec succès !"

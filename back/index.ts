@@ -8,7 +8,7 @@ import authRoutes from './routes/auth.routes';
 import passwordRoutes from './routes/password.routes';
 import passwordResetRoutes from './routes/passwordReset.routes';
 
-// Import des middleware de sécurité
+// // Import des middleware de sécurité
 import { 
   helmetConfig, 
   generalRateLimit, 
@@ -18,7 +18,7 @@ import {
   securityHeaders 
 } from './middleware/security.middleware';
 
-// Import des nouveaux middleware
+// // Import des nouveaux middleware
 import { 
   sanitizeInput, 
   validateContentType, 
@@ -49,9 +49,28 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const prisma = new PrismaClient();
 
+// Configuration trust proxy pour Docker/Reverse Proxy (plus sécurisé)
+app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);
+
 // Configuration CORS
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Récupérer les origines autorisées depuis l'environnement
+    const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+    const allowedOrigins = corsOrigin.split(',').map(origin => origin.trim());
+    
+    // En développement, accepter toutes les origines
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+    
+    // En production, vérifier l'origine
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Non autorisé par CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -105,7 +124,9 @@ app.get('/logs/metrics', getLoggingMetrics);
 app.post('/alerts/:alertId/resolve', resolveAlert);
 
 // Routes API avec authentification par clé API
-app.use('/api/auth', validateApiKey, authRoutes);
+app.use('/api/auth', 
+  // validateApiKey,
+   authRoutes);
 app.use('/api/passwords', validateApiKey, passwordRoutes);
 // app.use('/api/keys', apiKeyRoutes); // SUPPRIMÉ pour la sécurité
 app.use('/api/password-reset', validateApiKey, passwordResetRoutes);

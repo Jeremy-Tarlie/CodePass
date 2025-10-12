@@ -96,7 +96,7 @@ export class EmailService {
     
     const content: EmailContent = {
       to: email,
-      subject: 'Réinitialisation de votre mot de passe - Gestionnaire de Mots de Passe',
+      subject: 'Réinitialisation de votre mot de passe - Codepass',
       html: this.generatePasswordResetHtml(primaryUrl, secondaryUrl, isDevelopment),
       text: this.generatePasswordResetText(primaryUrl, secondaryUrl, isDevelopment)
     };
@@ -129,7 +129,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🔐 Gestionnaire de Mots de Passe</h1>
+            <h1>🔐 Codepass</h1>
           </div>
           <div class="content">
             <h2>Réinitialisation de votre mot de passe</h2>
@@ -161,7 +161,7 @@ export class EmailService {
           </div>
           <div class="footer">
             <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
-            <p>© 2024 Gestionnaire de Mots de Passe - Tous droits réservés</p>
+            <p>© 2025 Codepass - Tous droits réservés</p>
           </div>
         </div>
       </body>
@@ -174,7 +174,7 @@ export class EmailService {
    */
   private generatePasswordResetText(primaryUrl: string, secondaryUrl: string, isDevelopment: boolean = false): string {
     return `
-      Réinitialisation de votre mot de passe - Gestionnaire de Mots de Passe
+      Réinitialisation de votre mot de passe - Codepass
       
       Bonjour,
       
@@ -195,7 +195,7 @@ export class EmailService {
       
       Cet email a été envoyé automatiquement, merci de ne pas y répondre.
       
-      © 2024 Gestionnaire de Mots de Passe - Tous droits réservés
+      © 2025 Codepass - Tous droits réservés
     `;
   }
 

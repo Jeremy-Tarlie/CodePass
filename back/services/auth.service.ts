@@ -38,6 +38,7 @@ export class AuthService {
    * Hache un mot de passe
    */
   async hashPassword(password: string): Promise<string> {
+    console.log('saltRounds', process.env.BCRYPT_ROUNDS);
     const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '12');
     return bcrypt.hash(password, saltRounds);
   }

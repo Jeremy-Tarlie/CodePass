@@ -3,7 +3,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "com.gestmdp.app",
   "asar": true,
-  "productName": "Gestionnaire de Mots de Passe",
+  "productName": "CodePass",
   "icon": "favicon.ico",
   "directories": {
     "output": "release/${version}"
@@ -19,7 +19,7 @@
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
     "protocols": [
       {
-        "name": "Gestionnaire de Mots de Passe",
+        "name": "CodePass",
         "schemes": ["gestmdp"]
       }
     ]
@@ -36,7 +36,7 @@
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
     "protocols": [
       {
-        "name": "Gestionnaire de Mots de Passe",
+        "name": "CodePass",
         "schemes": ["gestmdp"]
       }
     ]
@@ -54,7 +54,7 @@
     "artifactName": "${productName}-Linux-${version}.${ext}",
     "protocols": [
       {
-        "name": "Gestionnaire de Mots de Passe",
+        "name": "CodePass",
         "schemes": ["gestmdp"]
       }
     ]
