@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+/* Styles pour le curseur pointer sur les éléments interactifs */
+button,
+a,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Assurer que les boutons désactivés gardent le curseur not-allowed */
+button:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
+/* Curseur pointer pour les éléments cliquables avec des classes Tailwind */
+.hover\:cursor-pointer:hover {
+  cursor: pointer;
+}

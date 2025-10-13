@@ -1,4 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron'
+import type { UpdateInfo, DownloadProgress } from '../src/types/electron'
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('ipcRenderer', {
@@ -25,5 +26,24 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
   },
   removeDeepLinkResetPasswordListener: () => {
     ipcRenderer.removeAllListeners('deep-link-reset-password')
+  }
+})
+
+// Expose a cleaner API for auto-updater
+contextBridge.exposeInMainWorld('electronAPI', {
+  onUpdateAvailable: (callback: (info: UpdateInfo) => void) => {
+    ipcRenderer.on('update-available', (_event, info) => callback(info))
+  },
+  onUpdateDownloaded: (callback: (info: UpdateInfo) => void) => {
+    ipcRenderer.on('update-downloaded', (_event, info) => callback(info))
+  },
+  onDownloadProgress: (callback: (progress: DownloadProgress) => void) => {
+    ipcRenderer.on('download-progress', (_event, progress) => callback(progress))
+  },
+  restartApp: () => {
+    ipcRenderer.send('restart-app')
+  },
+  checkForUpdates: () => {
+    ipcRenderer.send('check-for-updates')
   }
 })

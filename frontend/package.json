@@ -12,11 +12,15 @@
     "build:linux": "tsc && vite build && electron-builder --linux",
     "build:mac": "tsc && vite build && electron-builder --mac",
     "build:all": "tsc && vite build && electron-builder --win --linux --mac",
+    "build:publish": "tsc && vite build && electron-builder --win --linux --mac --publish=always",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "node ../scripts/create-release.js",
+    "check-permissions": "node ../scripts/check-permissions.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.13",
+    "electron-updater": "^6.6.2",
     "lucide-react": "^0.544.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

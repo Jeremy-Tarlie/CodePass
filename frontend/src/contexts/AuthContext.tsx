@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       return false;
     }
-  }, [API_URL, API_KEY]);
+  }, [API_URL]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<void> => {
     try {
@@ -74,7 +74,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('📡 Réponse reçue, status:', response.status);
 
       if (!response.ok) {
-        // Essayer de lire le message d'erreur
+        // Gestion spécifique des erreurs d'authentification
+        if (response.status === 401) {
+          throw new Error('Mauvais email ou mot de passe');
+        }
+        
+        // Essayer de lire le message d'erreur pour les autres cas
         try {
           const errorData = await response.json();
           throw new Error(errorData.message || `Erreur serveur (${response.status})`);
@@ -102,6 +107,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Messages d'erreur plus spécifiques
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error('Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur ' + API_URL);
+      }
+      
+      // Si c'est déjà notre message personnalisé, le garder
+      if (error instanceof Error && error.message === 'Mauvais email ou mot de passe') {
+        throw error;
       }
       
       throw error;

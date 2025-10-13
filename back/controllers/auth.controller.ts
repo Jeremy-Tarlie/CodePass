@@ -229,8 +229,8 @@ export class AuthController {
       body('password')
         .isLength({ min: 8 })
         .withMessage('Le mot de passe doit contenir au moins 8 caractères')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-        .withMessage('Le mot de passe doit contenir au moins une minuscule, une majuscule et un chiffre')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])/)
+        .withMessage('Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial')
     ];
   }
 

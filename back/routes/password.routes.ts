@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { PasswordController } from '../controllers/password.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { generalRateLimit } from '../middleware/security.middleware';
+import { handleValidationErrors } from '../middleware/validation.middleware';
 
 const router = Router();
 
@@ -16,11 +17,13 @@ router.get('/:id', PasswordController.getPassword);
 
 router.post('/', 
   PasswordController.getPasswordValidationRules(),
+  handleValidationErrors,
   PasswordController.createPassword
 );
 
 router.put('/:id', 
   PasswordController.getPasswordValidationRules(),
+  handleValidationErrors,
   PasswordController.updatePassword
 );
 

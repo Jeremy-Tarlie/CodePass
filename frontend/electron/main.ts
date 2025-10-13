@@ -1,4 +1,5 @@
 import { app, BrowserWindow, protocol } from 'electron'
+import { autoUpdater } from 'electron-updater'
 // import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -26,6 +27,45 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null
 let deepLinkUrl: string | null = null
+
+// Configuration de l'auto-updater
+autoUpdater.checkForUpdatesAndNotify()
+
+// Événements de l'auto-updater
+autoUpdater.on('checking-for-update', () => {
+  console.log('🔍 Vérification des mises à jour...')
+})
+
+autoUpdater.on('update-available', (info) => {
+  console.log('📦 Mise à jour disponible:', info.version)
+  if (win) {
+    win.webContents.send('update-available', info)
+  }
+})
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('✅ Application à jour:', info.version)
+})
+
+autoUpdater.on('error', (err) => {
+  console.error('❌ Erreur lors de la vérification des mises à jour:', err)
+})
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "📥 Téléchargement: " + progressObj.percent + "%"
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')'
+  console.log(log_message)
+  if (win) {
+    win.webContents.send('download-progress', progressObj)
+  }
+})
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('✅ Mise à jour téléchargée:', info.version)
+  if (win) {
+    win.webContents.send('update-downloaded', info)
+  }
+})
 
 // Fonction pour gérer les arguments de ligne de commande
 function handleCommandLineArgs() {
@@ -68,7 +108,11 @@ function handleCommandLineArgs() {
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    width: 1200,
+    height: 800,
+    minWidth: 800,
+    minHeight: 600,
+    icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
@@ -105,6 +149,15 @@ function createWindow() {
         }
       }
       deepLinkUrl = null
+    }
+  })
+
+  // Gestionnaires d'événements pour les mises à jour
+  win.webContents.on('ipc-message', (_event, channel) => {
+    if (channel === 'restart-app') {
+      autoUpdater.quitAndInstall()
+    } else if (channel === 'check-for-updates') {
+      autoUpdater.checkForUpdatesAndNotify()
     }
   })
 

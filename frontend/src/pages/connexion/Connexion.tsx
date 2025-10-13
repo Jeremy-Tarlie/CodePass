@@ -120,7 +120,11 @@ const Connexion = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la demande de réinitialisation:', error);
-      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        setError("Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
+      } else {
+        setError("Erreur lors de l'envoi de l'email. Veuillez réessayer.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -290,7 +294,7 @@ const Connexion = () => {
             <div className="space-y-6">
               <button
                 onClick={() => setActiveTab("connexion")}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
               >
                 <ArrowLeft size={20} />
                 <span>Retour à la connexion</span>
@@ -403,7 +407,7 @@ const Connexion = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -421,7 +425,7 @@ const Connexion = () => {
                 </label>
                 <button
                   type="button"
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium cursor-pointer"
                   onClick={() => {
                     setActiveTab("forgotPassword");
                     setForgotEmail(loginEmail);
@@ -510,7 +514,7 @@ const Connexion = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -536,7 +540,7 @@ const Connexion = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showConfirmPassword ? (
                       <EyeOff size={20} />

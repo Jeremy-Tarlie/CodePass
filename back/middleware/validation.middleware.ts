@@ -169,12 +169,12 @@ export const validateStrongPassword = (req: Request, res: Response, next: NextFu
   const { password } = req.body;
   
   if (password) {
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]{8,}$/;
     
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
-        message: 'Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial'
+        message: 'Le mot de passe doit contenir au moins 8 caractères, une minuscule, une majuscule, un chiffre et un caractère spécial (!@#$%^&*()_+-=[]{}|;:,.<>?/~`)'
       });
     }
     

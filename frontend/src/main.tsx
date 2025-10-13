@@ -11,6 +11,7 @@ import NotFound from "./pages/not-found/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ErrorPage from "./components/ErrorPage";
+import UpdateNotification from "./components/UpdateNotification";
 import { AuthProvider } from "./contexts/AuthContext";
 
 const router = createHashRouter([
@@ -44,6 +45,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <ErrorBoundary>
       <AuthProvider>
         <RouterProvider router={router} />
+        <UpdateNotification />
       </AuthProvider>
     </ErrorBoundary>
   </React.StrictMode>

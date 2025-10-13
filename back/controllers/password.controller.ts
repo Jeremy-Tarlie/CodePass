@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { EncryptionService } from '../services/encryption.service';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 
 const prisma = new PrismaClient();
 const encryptionService = new EncryptionService();
@@ -188,16 +188,6 @@ export class PasswordController {
    */
   static async createPassword(req: Request, res: Response): Promise<Response | void> {
     try {
-      // Validation des erreurs
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Données invalides',
-          errors: errors.array()
-        });
-      }
-
       const userId = (req as any).user.id;
       const { title, url, username, password, notes } = req.body;
       const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
@@ -278,16 +268,6 @@ export class PasswordController {
    */
   static async updatePassword(req: Request, res: Response): Promise<Response | void> {
     try {
-      // Validation des erreurs
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Données invalides',
-          errors: errors.array()
-        });
-      }
-
       const userId = (req as any).user.id;
       const { id } = req.params;
       const { title, url, username, password, notes } = req.body;
@@ -445,10 +425,26 @@ export class PasswordController {
         .withMessage('Le titre est requis')
         .isLength({ max: 100 })
         .withMessage('Le titre ne peut pas dépasser 100 caractères'),
+      body('username')
+        .notEmpty()
+        .withMessage('Le nom d\'utilisateur est requis')
+        .isLength({ max: 255 })
+        .withMessage('Le nom d\'utilisateur ne peut pas dépasser 255 caractères'),
+      body('password')
+        .notEmpty()
+        .withMessage('Le mot de passe est requis')
+        .isLength({ min: 8 })
+        .withMessage('Le mot de passe doit contenir au moins 8 caractères')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])/)
+        .withMessage('Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial'),
       body('url')
         .optional()
         .isURL()
-        .withMessage('URL invalide')
+        .withMessage('URL invalide'),
+      body('notes')
+        .optional()
+        .isLength({ max: 500 })
+        .withMessage('Les notes ne peuvent pas dépasser 500 caractères')
     ];
   }
 }

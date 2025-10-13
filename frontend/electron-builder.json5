@@ -9,19 +9,27 @@
   },
   "files": [
     "dist",
-    "dist-electron"
+    "dist-electron",
+    "favicon.ico"
   ],
+  "publish": {
+    "provider": "github",
+    "owner": "Damtis",
+    "repo": "gest_mdp"
+  },
   "mac": {
     "target": [
       "dmg"
     ],
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
+    "icon": "favicon.ico",
     "protocols": [
       {
         "name": "CodePass",
         "schemes": ["gestmdp"]
       }
-    ]
+    ],
+    "category": "public.app-category.productivity"
   },
   "win": {
     "target": [
@@ -33,12 +41,14 @@
       }
     ],
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
+    "icon": "favicon.ico",
     "protocols": [
       {
         "name": "CodePass",
         "schemes": ["gestmdp"]
       }
-    ]
+    ],
+    "publisherName": "CodePass Team"
   },
   "nsis": {
     "oneClick": false,
@@ -51,6 +61,7 @@
       "tar.gz"
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}",
+    "icon": "favicon.ico",
     "category": "Utility",
     "protocols": [
       {

@@ -110,7 +110,7 @@ const Accueil = () => {
       <button
         key={1}
         onClick={() => setCurrentPage(1)}
-        className={`px-3 py-1 rounded-md text-sm ${
+        className={`px-3 py-1 rounded-md text-sm cursor-pointer ${
           currentPage === 1
             ? "bg-indigo-600 text-white"
             : "bg-white text-gray-700 hover:bg-gray-300"
@@ -126,7 +126,7 @@ const Accueil = () => {
         <button
           key={i}
           onClick={() => setCurrentPage(i)}
-          className={`px-3 py-1 rounded-md text-sm ${
+          className={`px-3 py-1 rounded-md text-sm cursor-pointer ${
             currentPage === i
               ? "bg-indigo-600 text-white"
               : "bg-white text-gray-700 hover:bg-gray-300"
@@ -143,7 +143,7 @@ const Accueil = () => {
         <button
           key={totalPages}
           onClick={() => setCurrentPage(totalPages)}
-          className={`px-3 py-1 rounded-md text-sm ${
+          className={`px-3 py-1 rounded-md text-sm cursor-pointer ${
             currentPage === totalPages
               ? "bg-indigo-600 text-white"
               : "bg-white text-gray-700 hover:bg-gray-300"
@@ -438,7 +438,7 @@ const Accueil = () => {
                               navigator.clipboard.writeText(item.username);
                               toast.success("Nom d'utilisateur copié !");
                             }}
-                            className="flex items-center md:min-w-[180px] sm:min-w-[10px] max-w-[180px] gap-2 sm:mr-4 md:mr-0 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="flex items-center md:min-w-[180px] sm:min-w-[10px] max-w-[180px] gap-2 sm:mr-4 md:mr-0 py-2 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer"
                             title="Copier le nom d'utilisateur"
                             disabled={isLoading}
                           >
@@ -464,7 +464,7 @@ const Accueil = () => {
                             />
                             <button
                               onClick={() => togglePasswordVisibility(item.id!)}
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                               disabled={isLoading}
                               aria-label={
                                 visiblePasswords[item.id!]
@@ -484,7 +484,7 @@ const Accueil = () => {
                           <div className="flex gap-1 sm:ml-2">
                             <button
                               onClick={() => copyPassword(item.password)}
-                              className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors cursor-pointer"
                               title="Copier le mot de passe"
                               disabled={isLoading}
                               aria-label="Copier le mot de passe"
@@ -493,7 +493,7 @@ const Accueil = () => {
                             </button>
                             <button
                               onClick={() => openEditPopup(item)}
-                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                               title="Modifier le mot de passe"
                               disabled={isLoading}
                               aria-label="Modifier le mot de passe"
@@ -504,7 +504,7 @@ const Accueil = () => {
                               onClick={() =>
                                 confirmDeletePassword(item.id!, item.title)
                               }
-                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                               title="Supprimer le mot de passe"
                               disabled={isLoading}
                               aria-label="Supprimer le mot de passe"
@@ -572,7 +572,7 @@ const Accueil = () => {
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || isLoading}
-                  className="px-3 py-1 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed"
+                  className="px-3 py-1 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed cursor-pointer"
                   aria-label="Page précédente"
                 >
                   <ArrowLeft size={16} aria-hidden="true" />
@@ -583,7 +583,7 @@ const Accueil = () => {
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
                   disabled={currentPage === totalPages || isLoading}
-                  className="px-3 py-1 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed"
+                  className="px-3 py-1 rounded-md text-sm bg-white text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed cursor-pointer"
                   aria-label="Page suivante"
                 >
                   <ArrowRight size={16} aria-hidden="true" />
@@ -597,7 +597,7 @@ const Accueil = () => {
       {confirmDelete.id && (
         <div className="fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center">
           <div
-            className="absolute top-0 left-0 right-0 bottom-0 bg-gray-900 opacity-50"
+            className="absolute top-0 left-0 right-0 bottom-0 bg-gray-900 opacity-50 cursor-pointer"
             onClick={() => setConfirmDelete({ id: null, title: "" })}
           />
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 fixed">
@@ -659,7 +659,7 @@ const Accueil = () => {
       {popUp && (
         <div className="fixed top-0 left-0 right-0 bottom-0 z-50 flex items-center justify-center">
           <div
-            className="absolute top-0 left-0 right-0 bottom-0 inset-0 bg-gray-100 opacity-90"
+            className="absolute top-0 left-0 right-0 bottom-0 inset-0 bg-gray-100 opacity-90 cursor-pointer"
             onClick={() => !isLoading && setPopUp(false)}
           />
           <div className="relative mx-auto max-w-3xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl">
@@ -670,7 +670,7 @@ const Accueil = () => {
               <button
                 type="button"
                 onClick={() => !isLoading && setPopUp(false)}
-                className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 cursor-pointer"
                 disabled={isLoading}
                 aria-label="Fermer la fenêtre"
               >

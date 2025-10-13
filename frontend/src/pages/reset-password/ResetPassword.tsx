@@ -89,7 +89,11 @@ const ResetPassword = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la validation du token:', error);
-      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        setError("Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
+      } else {
+        setError("Erreur lors de la validation du token. Veuillez réessayer.");
+      }
     } finally {
       setIsValidating(false);
     }
@@ -134,7 +138,11 @@ const ResetPassword = () => {
       }
     } catch (error) {
       console.error('Erreur lors de la réinitialisation:', error);
-      setError("Erreur de connexion au serveur. Veuillez réessayer.");
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        setError("Impossible de se connecter au serveur. Vérifiez votre connexion internet.");
+      } else {
+        setError("Erreur lors de la réinitialisation. Veuillez réessayer.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -165,7 +173,7 @@ const ResetPassword = () => {
           <div className="space-y-6">
             <button
               onClick={() => navigate('/connexion')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
             >
               <ArrowLeft size={20} />
               <span>Retour à la connexion</span>
@@ -221,7 +229,7 @@ const ResetPassword = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -245,7 +253,7 @@ const ResetPassword = () => {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
                       {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
