@@ -15,7 +15,9 @@
   "publish": {
     "provider": "github",
     "owner": "Damtis",
-    "repo": "gest_mdp"
+    "repo": "gest_mdp",
+    "releaseType": "release",
+    "publishAutoUpdate": true
   },
   "mac": {
     "target": [

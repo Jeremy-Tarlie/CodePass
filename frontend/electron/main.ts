@@ -29,6 +29,8 @@ let win: BrowserWindow | null
 let deepLinkUrl: string | null = null
 
 // Configuration de l'auto-updater
+autoUpdater.autoDownload = true
+autoUpdater.autoInstallOnAppQuit = true
 autoUpdater.checkForUpdatesAndNotify()
 
 // Événements de l'auto-updater
