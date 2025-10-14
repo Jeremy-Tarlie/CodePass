@@ -424,27 +424,38 @@ export class PasswordController {
         .notEmpty()
         .withMessage('Le titre est requis')
         .isLength({ max: 100 })
-        .withMessage('Le titre ne peut pas dépasser 100 caractères'),
+        .withMessage('Le titre ne peut pas dépasser 100 caractères')
+        .trim(),
       body('username')
         .notEmpty()
         .withMessage('Le nom d\'utilisateur est requis')
         .isLength({ max: 255 })
-        .withMessage('Le nom d\'utilisateur ne peut pas dépasser 255 caractères'),
+        .withMessage('Le nom d\'utilisateur ne peut pas dépasser 255 caractères')
+        .trim(),
       body('password')
         .notEmpty()
         .withMessage('Le mot de passe est requis')
-        .isLength({ min: 8 })
-        .withMessage('Le mot de passe doit contenir au moins 8 caractères')
-        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])/)
-        .withMessage('Le mot de passe doit contenir au moins une minuscule, une majuscule, un chiffre et un caractère spécial'),
+        .isLength({ min: 1, max: 1000 })
+        .withMessage('Le mot de passe doit contenir entre 1 et 1000 caractères'),
       body('url')
         .optional()
-        .isURL()
-        .withMessage('URL invalide'),
+        .custom((value) => {
+          if (!value || value.trim() === '') {
+            return true; // URL optionnelle
+          }
+          try {
+            new URL(value);
+            return true;
+          } catch {
+            throw new Error('URL invalide');
+          }
+        })
+        .trim(),
       body('notes')
         .optional()
         .isLength({ max: 500 })
         .withMessage('Les notes ne peuvent pas dépasser 500 caractères')
+        .trim()
     ];
   }
 }

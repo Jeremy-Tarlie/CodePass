@@ -5,7 +5,8 @@
   "asar": true,
   "productName": "CodePass",
   "directories": {
-    "output": "release/${version}"
+    "output": "release/${version}",
+    "buildResources": "build"
   },
   "files": [
     "dist",
@@ -24,7 +25,7 @@
       "dmg"
     ],
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
-    "icon": "favicon.ico",
+    "icon": "build/icons/icon.icns",
     "protocols": [
       {
         "name": "CodePass",
@@ -43,33 +44,47 @@
       }
     ],
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
-    "icon": "favicon.ico",
+    "icon": "build/icons/icon.ico",
     "protocols": [
       {
         "name": "CodePass",
         "schemes": ["gestmdp"]
       }
     ],
-    "publisherName": "CodePass Team"
+    "publisherName": "CodePass Team",
+    "requestedExecutionLevel": "asInvoker",
+    "verifyUpdateCodeSignature": false
   },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "CodePass"
   },
   "linux": {
     "target": [
-      "tar.gz"
+      {
+        "target": "tar.gz",
+        "arch": ["x64"]
+      }
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}",
-    "icon": "favicon.ico",
+    "icon": "build/icons/",
     "category": "Utility",
     "protocols": [
       {
         "name": "CodePass",
         "schemes": ["gestmdp"]
       }
-    ]
+    ],
+    "desktop": {
+      "Name": "CodePass",
+      "Comment": "Gestionnaire de mots de passe",
+      "Keywords": "password;manager;security;",
+      "StartupWMClass": "CodePass"
+    }
   }
 }
