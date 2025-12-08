@@ -16,6 +16,10 @@ export interface ElectronAPI {
   onDownloadProgress: (callback: (progress: DownloadProgress) => void) => void
   restartApp: () => void
   checkForUpdates: () => void
+  
+  // API pour le démarrage automatique
+  setAutoStartup: (enabled: boolean) => Promise<{ success: boolean }>
+  getAutoStartupStatus: () => Promise<{ enabled: boolean }>
 }
 
 declare global {

@@ -1,6 +1,7 @@
-import { app, BrowserWindow, protocol } from 'electron'
+import { app, BrowserWindow, protocol, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
-// import { createRequire } from 'node:module'
+import { exec } from 'child_process'
+import { homedir } from 'os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -68,6 +69,101 @@ autoUpdater.on('update-downloaded', (info) => {
     win.webContents.send('update-downloaded', info)
   }
 })
+
+// Fonctions pour gérer le démarrage automatique
+function setAutoStartup(enabled: boolean) {
+  const appName = app.getName()
+  const appPath = process.execPath
+  
+  if (process.platform === 'win32') {
+    // Windows: Utiliser le registre Windows
+    const keyPath = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
+    
+    if (enabled) {
+      exec(`reg add "${keyPath}" /v "${appName}" /t REG_SZ /d "${appPath}" /f`, (error: Error | null | undefined) => {
+        if (error) {
+          console.error('❌ Erreur lors de l\'activation du démarrage automatique:', error)
+        } else {
+          console.log('✅ Démarrage automatique activé')
+        }
+      })
+    } else {
+      exec(`reg delete "${keyPath}" /v "${appName}" /f`, (error: Error | null | undefined) => {
+        if (error) {
+          console.error('❌ Erreur lors de la désactivation du démarrage automatique:', error)
+        } else {
+          console.log('✅ Démarrage automatique désactivé')
+        }
+      })
+    }
+  } else if (process.platform === 'darwin') {
+    // macOS: Utiliser les Login Items
+    app.setLoginItemSettings({
+      openAtLogin: enabled,
+      path: appPath,
+      name: appName
+    })
+  } else if (process.platform === 'linux') {
+    // Linux: Créer un fichier .desktop dans ~/.config/autostart/
+    const autostartDir = homedir() + '/.config/autostart'
+    const desktopFile = `${autostartDir}/${appName}.desktop`
+    
+    if (enabled) {
+      const desktopContent = `[Desktop Entry]
+Type=Application
+Name=${appName}
+Exec=${appPath}
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+`
+      exec(`mkdir -p "${autostartDir}" && echo '${desktopContent}' > "${desktopFile}"`, (error: Error | null | undefined) => {
+        if (error) {
+          console.error('❌ Erreur lors de l\'activation du démarrage automatique:', error)
+        } else {
+          console.log('✅ Démarrage automatique activé')
+        }
+      })
+    } else {
+      exec(`rm -f "${desktopFile}"`, (error: Error | null | undefined) => {
+        if (error) {
+          console.error('❌ Erreur lors de la désactivation du démarrage automatique:', error)
+        } else {
+          console.log('✅ Démarrage automatique désactivé')
+        }
+      })
+    }
+  }
+}
+
+function isAutoStartupEnabled(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (process.platform === 'win32') {
+      const appName = app.getName()
+      const keyPath = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
+      
+      exec(`reg query "${keyPath}" /v "${appName}"`, (error: Error | null | undefined, stdout: string) => {
+        if (error) {
+          resolve(false)
+        } else {
+          resolve(stdout.includes(appName))
+        }
+      })
+    } else if (process.platform === 'darwin') {
+      const loginItemSettings = app.getLoginItemSettings()
+      resolve(loginItemSettings.openAtLogin)
+    } else if (process.platform === 'linux') {
+      const appName = app.getName()
+      const desktopFile = homedir() + `/.config/autostart/${appName}.desktop`
+      
+      exec(`test -f "${desktopFile}"`, (error: Error | null | undefined) => {
+        resolve(!error)
+      })
+    } else {
+      resolve(false)
+    }
+  })
+}
 
 // Fonction pour gérer les arguments de ligne de commande
 function handleCommandLineArgs() {
@@ -170,6 +266,17 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
 }
+
+// Gestionnaires IPC pour le démarrage automatique
+ipcMain.handle('set-auto-startup', async (_event, enabled: boolean) => {
+  setAutoStartup(enabled)
+  return { success: true }
+})
+
+ipcMain.handle('get-auto-startup-status', async () => {
+  const isEnabled = await isAutoStartupEnabled()
+  return { enabled: isEnabled }
+})
 
 function handleDeepLink(url: string) {
   console.log('🔗 Deep link reçu:', url)

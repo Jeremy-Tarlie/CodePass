@@ -45,5 +45,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   checkForUpdates: () => {
     ipcRenderer.send('check-for-updates')
+  },
+  
+  // API pour le démarrage automatique
+  setAutoStartup: async (enabled: boolean) => {
+    return await ipcRenderer.invoke('set-auto-startup', enabled)
+  },
+  getAutoStartupStatus: async () => {
+    return await ipcRenderer.invoke('get-auto-startup-status')
   }
 })
