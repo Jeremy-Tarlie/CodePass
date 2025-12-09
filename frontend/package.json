@@ -1,9 +1,14 @@
 {
-  "name": "gest-mdp",
+  "name": "CodePass",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
-  "description": "CodePass",
+  "description": "Gestionnaire de mots de passe",
+  "homepage": "https://github.com/Damtis/gest_mdp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Damtis/gest_mdp.git"
+  },
   "author": "Jérémy Tarlié et Baptiste Damoiseau",
   "scripts": {
     "dev": "vite",
@@ -13,6 +18,10 @@
     "build:linux": "npm run prepare-icons && tsc && vite build && electron-builder --linux",
     "build:mac": "npm run prepare-icons && tsc && vite build && electron-builder --mac",
     "build:all": "npm run prepare-icons && tsc && vite build && electron-builder --win --linux --mac",
+    "build:win:publish": "npm run prepare-icons && tsc && vite build && electron-builder --win --publish=always",
+    "build:linux:publish": "npm run prepare-icons && tsc && vite build && electron-builder --linux --publish=always",
+    "build:mac:publish": "npm run prepare-icons && tsc && vite build && electron-builder --mac --publish=always",
+    "build:linux:docker": "docker run --rm -v ${PWD}:/project -w /project electronuserland/builder:wine npm run build:linux",
     "build:publish": "npm run prepare-icons && tsc && vite build && electron-builder --win --linux --publish=always",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",

@@ -2,67 +2,208 @@ name: Build and Release Electron App
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        
+  # Récupérer la version du package.json
+  get-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Install dependencies
-      run: |
-        cd frontend
-        npm i
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(node -p "require('./frontend/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $VERSION"
+
+  build-windows:
+    needs: get-version
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Build application
-      run: |
-        cd frontend
-        npm run build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Build Electron app for Windows
+        run: |
+          cd frontend
+          npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            frontend/release/**/*.exe
+            frontend/release/**/*.yml
+            frontend/release/**/*.yaml
+          retention-days: 5
+
+  build-linux:
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Build Electron app
-      run: |
-        cd frontend
-        npm run build:all
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Build Electron app for Linux
+        run: |
+          cd frontend
+          npm run build:linux
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: |
+            frontend/release/**/*.deb
+            frontend/release/**/*.AppImage
+            frontend/release/**/*.yml
+            frontend/release/**/*.yaml
+          retention-days: 5
+
+  build-mac:
+    needs: get-version
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: electron-app-${{ matrix.os }}
-        path: frontend/release/
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Build Electron app for macOS
+        run: |
+          cd frontend
+          npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: |
+            frontend/release/**/*.dmg
+            frontend/release/**/*.zip
+            frontend/release/**/*.yml
+            frontend/release/**/*.yaml
+          retention-days: 5
+
+  release:
+    needs: [get-version, build-windows, build-linux, build-mac]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-    - name: Create Release
-      if: matrix.os == 'ubuntu-latest'
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: ${{ github.ref_name }}
-        name: Release ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-        generate_release_notes: true
-        files: |
-          frontend/release/*/CodePass-Windows-*-Setup.exe
-          frontend/release/*/CodePass-Mac-*-Installer.dmg
-          frontend/release/*/CodePass-Linux-*.tar.gz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          
+      - name: Display structure of downloaded files
+        run: |
+          echo "📁 Structure des artifacts:"
+          ls -la artifacts/
+          echo ""
+          echo "📁 Windows:"
+          ls -la artifacts/windows-build/ 2>/dev/null || echo "Pas de fichiers Windows"
+          echo ""
+          echo "📁 Linux:"
+          ls -la artifacts/linux-build/ 2>/dev/null || echo "Pas de fichiers Linux"
+          echo ""
+          echo "📁 macOS:"
+          ls -la artifacts/mac-build/ 2>/dev/null || echo "Pas de fichiers macOS"
+          
+      - name: Find all release files
+        id: find-files
+        run: |
+          echo "🔍 Recherche des fichiers..."
+          find artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.zip" \) | head -20
+          
+      - name: Delete existing release if exists
+        run: |
+          VERSION="v${{ needs.get-version.outputs.version }}"
+          echo "🗑️ Suppression de la release existante $VERSION si elle existe..."
+          gh release delete "$VERSION" --yes 2>/dev/null || echo "Pas de release existante à supprimer"
+          git push origin --delete "$VERSION" 2>/dev/null || echo "Pas de tag existant à supprimer"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.get-version.outputs.version }}
+          name: 🚀 CodePass v${{ needs.get-version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          make_latest: true
+          files: |
+            artifacts/windows-build/**/*.exe
+            artifacts/linux-build/**/*.deb
+            artifacts/linux-build/**/*.AppImage
+            artifacts/mac-build/**/*.dmg
+            artifacts/mac-build/**/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Release Summary
+        run: |
+          echo "✅ Release v${{ needs.get-version.outputs.version }} créée avec succès!"
+          echo ""
+          echo "📦 Fichiers publiés:"
+          echo "  - Windows: CodePass-Windows-${{ needs.get-version.outputs.version }}-Setup.exe"
+          echo "  - Linux: CodePass-Linux-${{ needs.get-version.outputs.version }}.deb"
+          echo "  - Linux: CodePass-Linux-${{ needs.get-version.outputs.version }}.AppImage"
+          echo "  - macOS: CodePass-Mac-${{ needs.get-version.outputs.version }}-Installer.dmg"

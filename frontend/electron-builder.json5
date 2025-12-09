@@ -4,15 +4,18 @@
   "appId": "com.gestmdp.app",
   "asar": true,
   "productName": "CodePass",
+
   "directories": {
     "output": "release/${version}",
     "buildResources": "build"
   },
+
   "files": [
     "dist",
     "dist-electron",
     "favicon.ico"
   ],
+
   "publish": {
     "provider": "github",
     "owner": "Damtis",
@@ -20,41 +23,34 @@
     "releaseType": "release",
     "publishAutoUpdate": true
   },
+
   "mac": {
-    "target": [
-      "dmg"
-    ],
+    "target": ["dmg"],
     "artifactName": "${productName}-Mac-${version}-Installer.${ext}",
     "icon": "build/icons/icon.icns",
     "protocols": [
-      {
-        "name": "CodePass",
-        "schemes": ["gestmdp"]
-      }
+      { "name": "CodePass", "schemes": ["gestmdp"] }
     ],
     "category": "public.app-category.productivity"
   },
+
   "win": {
     "target": [
       {
         "target": "nsis",
-        "arch": [
-          "x64"
-        ]
+        "arch": ["x64"]
       }
     ],
     "artifactName": "${productName}-Windows-${version}-Setup.${ext}",
     "icon": "build/icons/icon.ico",
     "protocols": [
-      {
-        "name": "CodePass",
-        "schemes": ["gestmdp"]
-      }
+      { "name": "CodePass", "schemes": ["gestmdp"] }
     ],
     "publisherName": "CodePass Team",
     "requestedExecutionLevel": "asInvoker",
     "verifyUpdateCodeSignature": false
   },
+
   "nsis": {
     "oneClick": false,
     "perMachine": false,
@@ -64,27 +60,35 @@
     "createStartMenuShortcut": true,
     "shortcutName": "CodePass"
   },
+
   "linux": {
+    "maintainer": "Tarlié Jérémy <contact@tarlie.fr>",
     "target": [
       {
-        "target": "tar.gz",
+        "target": "deb",
+        "arch": ["x64"]
+      },
+      {
+        "target": "AppImage",
         "arch": ["x64"]
       }
     ],
     "artifactName": "${productName}-Linux-${version}.${ext}",
     "icon": "build/icons/",
     "category": "Utility",
+
+    // Nom réel de l'exécutable installé dans /usr/bin
+    "executableName": "gest-mdp",
+
     "protocols": [
-      {
-        "name": "CodePass",
-        "schemes": ["gestmdp"]
-      }
+      { "name": "CodePass", "schemes": ["gestmdp"] }
     ],
+
     "desktop": {
       "Name": "CodePass",
       "Comment": "Gestionnaire de mots de passe",
       "Keywords": "password;manager;security;",
-      "StartupWMClass": "CodePass"
+      "StartupWMClass": "gest-mdp"
     }
   }
 }
