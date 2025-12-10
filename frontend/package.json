@@ -1,7 +1,7 @@
 {
   "name": "CodePass",
   "private": true,
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "description": "Gestionnaire de mots de passe",
   "homepage": "https://github.com/Damtis/gest_mdp",
@@ -35,7 +35,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.9.3",
-    "react-toastify": "^11.0.5",
+    "react-toastify": "^11.0.6",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
