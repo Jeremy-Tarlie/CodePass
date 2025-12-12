@@ -1,142 +1,183 @@
-import React, { useState, useEffect } from 'react'
-import { Download, RefreshCw, CheckCircle } from 'lucide-react'
-import { UpdateInfo, DownloadProgress } from '../types/electron'
+import { useState, useEffect } from 'react';
+import { Download, RefreshCw, X, CheckCircle2 } from 'lucide-react';
+import type { UpdateInfo, DownloadProgress } from '../types/electron';
 
-const UpdateNotification: React.FC = () => {
-  const [updateAvailable, setUpdateAvailable] = useState<UpdateInfo | null>(null)
-  const [updateDownloaded, setUpdateDownloaded] = useState<UpdateInfo | null>(null)
-  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null)
-  const [isChecking, setIsChecking] = useState(false)
-  const [showNotification, setShowNotification] = useState(false)
+const UpdateNotification = () => {
+  const [updateAvailable, setUpdateAvailable] = useState<UpdateInfo | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
+  const [updateDownloaded, setUpdateDownloaded] = useState<UpdateInfo | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    // Écouter les événements de mise à jour
-    if (window.electronAPI) {
-      window.electronAPI.onUpdateAvailable((info: UpdateInfo) => {
-        setUpdateAvailable(info)
-        setShowNotification(true)
-      })
+    // Vérifier si l'API Electron est disponible
+    if (typeof window !== 'undefined' && window.electronAPI) {
+      // Écouter les événements de mise à jour
+      window.electronAPI.onUpdateAvailable((info) => {
+        console.log('📦 Mise à jour disponible:', info);
+        setUpdateAvailable(info);
+        setIsVisible(true);
+        setIsDismissed(false);
+      });
 
-      window.electronAPI.onUpdateDownloaded((info: UpdateInfo) => {
-        setUpdateDownloaded(info)
-        setDownloadProgress(null)
-        setShowNotification(true)
-      })
+      window.electronAPI.onDownloadProgress((progress) => {
+        console.log('📥 Progression:', progress.percent.toFixed(1) + '%');
+        setDownloadProgress(progress);
+      });
 
-      window.electronAPI.onDownloadProgress((progress: DownloadProgress) => {
-        setDownloadProgress(progress)
-      })
+      window.electronAPI.onUpdateDownloaded((info) => {
+        console.log('✅ Mise à jour téléchargée:', info);
+        setUpdateDownloaded(info);
+        setDownloadProgress(null);
+        setIsVisible(true);
+      });
+
+      // Vérifier les mises à jour au démarrage
+      console.log('🔍 Vérification des mises à jour...');
+      window.electronAPI.checkForUpdates();
     }
-  }, [])
+  }, []);
 
-  const handleCheckForUpdates = () => {
-    setIsChecking(true)
+  const handleRestart = () => {
     if (window.electronAPI) {
-      window.electronAPI.checkForUpdates()
+      window.electronAPI.restartApp();
     }
-    setTimeout(() => setIsChecking(false), 2000)
-  }
-
-  const handleRestartApp = () => {
-    if (window.electronAPI) {
-      window.electronAPI.restartApp()
-    }
-  }
+  };
 
   const handleDismiss = () => {
-    setShowNotification(false)
-    setUpdateAvailable(null)
-    setUpdateDownloaded(null)
-    setDownloadProgress(null)
+    setIsDismissed(true);
+    setIsVisible(false);
+  };
+
+  // Ne rien afficher si pas visible ou si dismissé
+  if (!isVisible || isDismissed) {
+    return null;
   }
 
-  if (!showNotification && !isChecking) {
+  // Mise à jour téléchargée - Prête à installer
+  if (updateDownloaded) {
     return (
-      <div className="fixed bottom-4 right-4">
-        <button
-          onClick={handleCheckForUpdates}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg transition-colors flex items-center gap-2"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Vérifier les mises à jour
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm z-50">
-      {isChecking && (
-        <div className="flex items-center gap-3">
-          <RefreshCw className="w-5 h-5 animate-spin text-blue-500" />
-          <div>
-            <p className="font-medium text-gray-900">Vérification des mises à jour...</p>
-            <p className="text-sm text-gray-500">Recherche de nouvelles versions</p>
+      <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl shadow-2xl p-5 max-w-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white/20 rounded-full">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Mise à jour prête !</h3>
+                <p className="text-sm text-green-100 mt-1">
+                  Version {updateDownloaded.version} téléchargée
+                </p>
+                <p className="text-xs text-green-200 mt-2">
+                  Redémarrez pour installer la mise à jour
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleDismiss}
+              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <button
+              onClick={handleDismiss}
+              className="flex-1 py-2 px-4 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+            >
+              Plus tard
+            </button>
+            <button
+              onClick={handleRestart}
+              className="flex-1 py-2 px-4 bg-white text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              <RefreshCw size={16} />
+              Redémarrer
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {updateAvailable && !updateDownloaded && (
-        <div className="flex items-start gap-3">
-          <Download className="w-5 h-5 text-blue-500 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium text-gray-900">Mise à jour disponible</p>
-            <p className="text-sm text-gray-500 mb-2">
-              Version {updateAvailable.version} est disponible
-            </p>
-            {downloadProgress && (
-              <div className="mb-2">
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>Téléchargement...</span>
-                  <span>{Math.round(downloadProgress.percent)}%</span>
+  // Téléchargement en cours
+  if (downloadProgress && updateAvailable) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl shadow-2xl p-5 max-w-sm">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-white/20 rounded-full animate-pulse">
+              <Download className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg">Téléchargement en cours</h3>
+              <p className="text-sm text-blue-100 mt-1">
+                Version {updateAvailable.version}
+              </p>
+              
+              {/* Barre de progression */}
+              <div className="mt-3">
+                <div className="flex justify-between text-xs text-blue-200 mb-1">
+                  <span>{downloadProgress.percent.toFixed(1)}%</span>
+                  <span>
+                    {(downloadProgress.transferred / 1024 / 1024).toFixed(1)} / {(downloadProgress.total / 1024 / 1024).toFixed(1)} MB
+                  </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-white rounded-full h-2 transition-all duration-300"
                     style={{ width: `${downloadProgress.percent}%` }}
                   />
                 </div>
               </div>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={handleDismiss}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Plus tard
-              </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {updateDownloaded && (
-        <div className="flex items-start gap-3">
-          <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-          <div className="flex-1">
-            <p className="font-medium text-gray-900">Mise à jour prête</p>
-            <p className="text-sm text-gray-500 mb-3">
-              Version {updateDownloaded.version} a été téléchargée et est prête à être installée
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={handleRestartApp}
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors"
-              >
-                Redémarrer maintenant
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="text-sm text-gray-500 hover:text-gray-700 px-2 py-1.5"
-              >
-                Plus tard
-              </button>
+  // Mise à jour disponible (pas encore téléchargée)
+  if (updateAvailable) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl shadow-2xl p-5 max-w-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-white/20 rounded-full">
+                <Download className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Mise à jour disponible</h3>
+                <p className="text-sm text-indigo-200 mt-1">
+                  Version {updateAvailable.version}
+                </p>
+                {updateAvailable.releaseNotes && (
+                  <p className="text-xs text-indigo-300 mt-2 line-clamp-2">
+                    {updateAvailable.releaseNotes}
+                  </p>
+                )}
+              </div>
             </div>
+            <button
+              onClick={handleDismiss}
+              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+            >
+              <X size={18} />
+            </button>
           </div>
+          
+          <p className="text-xs text-indigo-200 mt-3">
+            La mise à jour se télécharge automatiquement...
+          </p>
         </div>
-      )}
-    </div>
-  )
-}
+      </div>
+    );
+  }
 
-export default UpdateNotification
+  return null;
+};
+
+export default UpdateNotification;

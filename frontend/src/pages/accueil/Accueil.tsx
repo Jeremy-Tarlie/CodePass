@@ -19,10 +19,13 @@ import {
   Mail,
   LogOut,
   Settings,
+  User,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { passwordService, PasswordEntry, CreatePasswordData, UpdatePasswordData } from "../../services/passwordService";
 import AutoStartupSettings from "../../components/AutoStartupSettings";
+import ProfileSettings from "../../components/ProfileSettings";
+import UpdateNotification from "../../components/UpdateNotification";
 
 type PasswordForm = {
   id?: string;
@@ -91,6 +94,7 @@ const Accueil = () => {
     title: "",
   });
   const [showAutoStartupSettings, setShowAutoStartupSettings] = useState<boolean>(false);
+  const [showProfileSettings, setShowProfileSettings] = useState<boolean>(false);
 
   const filteredPasswords = useMemo(() => {
     return passwords.filter(
@@ -333,6 +337,14 @@ const Accueil = () => {
               )}
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowProfileSettings(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
+                disabled={isLoading}
+                aria-label="Paramètres du profil"
+              >
+                <User size={18} /> Profil
+              </button>
               <button
                 onClick={() => setShowAutoStartupSettings(true)}
                 className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
@@ -867,6 +879,12 @@ const Accueil = () => {
       {showAutoStartupSettings && (
         <AutoStartupSettings onClose={() => setShowAutoStartupSettings(false)} />
       )}
+
+      {showProfileSettings && (
+        <ProfileSettings onClose={() => setShowProfileSettings(false)} />
+      )}
+
+      <UpdateNotification />
 
       <ToastContainer
         position="top-center"
