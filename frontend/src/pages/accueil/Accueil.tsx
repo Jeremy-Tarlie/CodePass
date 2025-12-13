@@ -18,12 +18,10 @@ import {
   ArrowRight,
   Mail,
   LogOut,
-  Settings,
   User,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { passwordService, PasswordEntry, CreatePasswordData, UpdatePasswordData } from "../../services/passwordService";
-import AutoStartupSettings from "../../components/AutoStartupSettings";
 import ProfileSettings from "../../components/ProfileSettings";
 import UpdateNotification from "../../components/UpdateNotification";
 
@@ -93,7 +91,6 @@ const Accueil = () => {
     id: null,
     title: "",
   });
-  const [showAutoStartupSettings, setShowAutoStartupSettings] = useState<boolean>(false);
   const [showProfileSettings, setShowProfileSettings] = useState<boolean>(false);
 
   const filteredPasswords = useMemo(() => {
@@ -344,14 +341,6 @@ const Accueil = () => {
                 aria-label="Paramètres du profil"
               >
                 <User size={18} /> Profil
-              </button>
-              <button
-                onClick={() => setShowAutoStartupSettings(true)}
-                className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center gap-2"
-                disabled={isLoading}
-                aria-label="Paramètres de démarrage automatique"
-              >
-                <Settings size={18} /> Démarrage auto
               </button>
               <button
                 onClick={() => {
@@ -874,10 +863,6 @@ const Accueil = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {showAutoStartupSettings && (
-        <AutoStartupSettings onClose={() => setShowAutoStartupSettings(false)} />
       )}
 
       {showProfileSettings && (
