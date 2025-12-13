@@ -75,34 +75,22 @@ function setAutoStartup(enabled: boolean) {
   const appName = app.getName()
   const appPath = process.execPath
   
-  if (process.platform === 'win32') {
-    // Windows: Utiliser le registre Windows
-    const keyPath = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
-    
-    if (enabled) {
-      exec(`reg add "${keyPath}" /v "${appName}" /t REG_SZ /d "${appPath}" /f`, (error: Error | null | undefined) => {
-        if (error) {
-          console.error('❌ Erreur lors de l\'activation du démarrage automatique:', error)
-        } else {
-          console.log('✅ Démarrage automatique activé')
-        }
-      })
-    } else {
-      exec(`reg delete "${keyPath}" /v "${appName}" /f`, (error: Error | null | undefined) => {
-        if (error) {
-          console.error('❌ Erreur lors de la désactivation du démarrage automatique:', error)
-        } else {
-          console.log('✅ Démarrage automatique désactivé')
-        }
-      })
-    }
-  } else if (process.platform === 'darwin') {
-    // macOS: Utiliser les Login Items
+  if (process.platform === 'win32' || process.platform === 'darwin') {
+    // Windows & macOS: Utiliser l'API native d'Electron
+    // Sur Windows, cela s'intègre avec le Gestionnaire des tâches
     app.setLoginItemSettings({
       openAtLogin: enabled,
       path: appPath,
-      name: appName
+      name: appName,
+      // Windows uniquement: ouvrir en mode caché (minimisé)
+      args: []
     })
+    
+    if (enabled) {
+      console.log('✅ Démarrage automatique activé (API native)')
+    } else {
+      console.log('✅ Démarrage automatique désactivé (API native)')
+    }
   } else if (process.platform === 'linux') {
     // Linux: Créer un fichier .desktop dans ~/.config/autostart/
     const autostartDir = homedir() + '/.config/autostart'
@@ -138,20 +126,20 @@ X-GNOME-Autostart-enabled=true
 
 function isAutoStartupEnabled(): Promise<boolean> {
   return new Promise((resolve) => {
-    if (process.platform === 'win32') {
-      const appName = app.getName()
-      const keyPath = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'
-      
-      exec(`reg query "${keyPath}" /v "${appName}"`, (error: Error | null | undefined, stdout: string) => {
-        if (error) {
-          resolve(false)
-        } else {
-          resolve(stdout.includes(appName))
-        }
-      })
-    } else if (process.platform === 'darwin') {
+    if (process.platform === 'win32' || process.platform === 'darwin') {
+      // Windows & macOS: Utiliser l'API native d'Electron
+      // Cela lit le vrai statut depuis le Gestionnaire des tâches Windows
       const loginItemSettings = app.getLoginItemSettings()
-      resolve(loginItemSettings.openAtLogin)
+      
+      console.log('📋 Statut démarrage auto:', {
+        openAtLogin: loginItemSettings.openAtLogin,
+        // Sur Windows, vérifie si l'entrée existe ET est activée dans le Gestionnaire des tâches
+        executableWillLaunchAtLogin: loginItemSettings.executableWillLaunchAtLogin
+      })
+      
+      // executableWillLaunchAtLogin est true seulement si l'app va vraiment démarrer
+      // (prend en compte le statut dans le Gestionnaire des tâches Windows)
+      resolve(loginItemSettings.executableWillLaunchAtLogin ?? loginItemSettings.openAtLogin)
     } else if (process.platform === 'linux') {
       const appName = app.getName()
       const desktopFile = homedir() + `/.config/autostart/${appName}.desktop`

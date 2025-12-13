@@ -48,7 +48,13 @@
     ],
     "publisherName": "CodePass Team",
     "requestedExecutionLevel": "asInvoker",
-    "verifyUpdateCodeSignature": false
+    "verifyUpdateCodeSignature": false,
+    // Signature de code Windows (nécessite un certificat)
+    // Pour signer, définir les variables d'environnement :
+    // CSC_LINK : chemin vers le fichier .pfx
+    // CSC_KEY_PASSWORD : mot de passe du certificat
+    "signAndEditExecutable": true,
+    "signDlls": false
   },
 
   "nsis": {
