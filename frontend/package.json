@@ -1,7 +1,7 @@
 {
   "name": "CodePass",
   "private": true,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "description": "Gestionnaire de mots de passe",
   "homepage": "https://github.com/Damtis/gest_mdp",
