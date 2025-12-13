@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import authRoutes from './routes/auth.routes';
 import passwordRoutes from './routes/password.routes';
 import passwordResetRoutes from './routes/passwordReset.routes';
+import profileRoutes from './routes/profile.routes';
 
 // // Import des middleware de sécurité
 import { 
@@ -122,6 +123,7 @@ app.use('/api/auth',
 app.use('/api/passwords', validateApiKey, passwordRoutes);
 // app.use('/api/keys', apiKeyRoutes); // SUPPRIMÉ pour la sécurité
 app.use('/api/password-reset', validateApiKey, passwordResetRoutes);
+app.use('/api/profile', validateApiKey, profileRoutes);
 
 // Route 404
 app.use('*', (_req, res) => {

@@ -19,6 +19,12 @@ export const API_CONFIG = {
       BASE: '/api/passwords',
       BY_ID: (id: string) => `/api/passwords/${id}`,
     },
+    PROFILE: {
+      BASE: '/api/profile',
+      EMAIL: '/api/profile/email',
+      PASSWORD: '/api/profile/password',
+      BACKUP_EMAIL: '/api/profile/backup-email',
+    },
   },
 };
 
