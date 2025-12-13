@@ -94,7 +94,7 @@ export class ProfileController {
       }
 
       // Vérifier le mot de passe actuel
-      const isPasswordValid = await encryptionService.comparePassword(currentPassword, user.password);
+      const isPasswordValid = await encryptionService.verifyPassword(currentPassword, user.password);
       if (!isPasswordValid) {
         await prisma.securityLog.create({
           data: {
@@ -209,7 +209,7 @@ export class ProfileController {
       }
 
       // Vérifier le mot de passe actuel
-      const isPasswordValid = await encryptionService.comparePassword(currentPassword, user.password);
+      const isPasswordValid = await encryptionService.verifyPassword(currentPassword, user.password);
       if (!isPasswordValid) {
         await prisma.securityLog.create({
           data: {
@@ -310,7 +310,7 @@ export class ProfileController {
       }
 
       // Vérifier le mot de passe actuel
-      const isPasswordValid = await encryptionService.comparePassword(currentPassword, user.password);
+      const isPasswordValid = await encryptionService.verifyPassword(currentPassword, user.password);
       if (!isPasswordValid) {
         await prisma.securityLog.create({
           data: {
