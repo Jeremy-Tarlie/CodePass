@@ -27,6 +27,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   lastLogin DateTime?
+  // Date du dernier changement de mot de passe (pour rappel 6 mois)
+  passwordChangedAt DateTime?
   
   // Relations
   passwords PasswordEntry[]

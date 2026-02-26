@@ -6,6 +6,8 @@ export interface UserProfile {
   backupEmail: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Date du dernier changement de mot de passe (pour rappel 6 mois) */
+  passwordChangedAt: string | null;
 }
 
 export interface UpdateEmailData {

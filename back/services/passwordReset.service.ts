@@ -216,7 +216,8 @@ export class PasswordResetService {
         where: { id: resetToken.userId },
         data: {
           password: hashedPassword,
-          updatedAt: new Date()
+          updatedAt: new Date(),
+          passwordChangedAt: new Date()
         }
       });
 

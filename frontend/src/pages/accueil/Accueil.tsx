@@ -22,7 +22,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { passwordService, PasswordEntry, CreatePasswordData, UpdatePasswordData } from "../../services/passwordService";
+import { profileService, UserProfile } from "../../services/profileService";
 import ProfileSettings from "../../components/ProfileSettings";
+import PasswordChangeReminderPopup, { shouldShowPasswordReminder } from "../../components/PasswordChangeReminderPopup";
 import UpdateNotification from "../../components/UpdateNotification";
 
 type PasswordForm = {
@@ -92,6 +94,26 @@ const Accueil = () => {
     title: "",
   });
   const [showProfileSettings, setShowProfileSettings] = useState<boolean>(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileSettingsInitialTab, setProfileSettingsInitialTab] = useState<'email' | 'password'>('email');
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const p = await profileService.getProfile();
+      setProfile(p);
+    } catch {
+      setProfile(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const showPasswordReminder =
+    profile !== null &&
+    !showProfileSettings &&
+    shouldShowPasswordReminder(profile.passwordChangedAt ?? null);
 
   const filteredPasswords = useMemo(() => {
     return passwords.filter(
@@ -866,7 +888,24 @@ const Accueil = () => {
       )}
 
       {showProfileSettings && (
-        <ProfileSettings onClose={() => setShowProfileSettings(false)} />
+        <ProfileSettings
+          initialTab={profileSettingsInitialTab}
+          onClose={() => {
+            setShowProfileSettings(false);
+            setProfileSettingsInitialTab('email');
+            fetchProfile();
+          }}
+        />
+      )}
+
+      {showPasswordReminder && (
+        <PasswordChangeReminderPopup
+          onOpenSettings={() => setShowProfileSettings(true)}
+          onOpenPasswordTab={() => {
+            setProfileSettingsInitialTab('password');
+            setShowProfileSettings(true);
+          }}
+        />
       )}
 
       <UpdateNotification />

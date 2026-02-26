@@ -16,8 +16,9 @@ export const validateApiKey = (req: Request, res: Response, next: NextFunction):
       });
     }
 
-    // Récupérer la clé API configurée dans l'environnement
-    const validApiKey = process.env.API_KEY || 'default-api-key-for-development';
+    // Récupérer la clé API configurée dans l'environnement (pas de valeur par défaut en production)
+    const validApiKey = process.env.API_KEY
+      || (process.env.NODE_ENV === 'production' ? undefined : 'default-api-key-for-development');
     
     if (!validApiKey) {
       console.error('API_KEY non configurée dans les variables d\'environnement');
@@ -28,10 +29,9 @@ export const validateApiKey = (req: Request, res: Response, next: NextFunction):
     }
 
     // Comparer les clés de manière sécurisée (timing-safe comparison)
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(apiKey, 'utf8'),
-      Buffer.from(validApiKey, 'utf8')
-    );
+    const keyBuf = Buffer.from(apiKey, 'utf8');
+    const validBuf = Buffer.from(validApiKey, 'utf8');
+    const isValid = keyBuf.length === validBuf.length && crypto.timingSafeEqual(keyBuf, validBuf);
 
     if (!isValid) {
       // Log de sécurité pour les tentatives d'accès avec une clé invalide
@@ -68,10 +68,9 @@ export const optionalApiKey = (req: Request, _res: Response, next: NextFunction)
       const validApiKey = process.env.API_KEY;
       
       if (validApiKey) {
-        const isValid = crypto.timingSafeEqual(
-          Buffer.from(apiKey, 'utf8'),
-          Buffer.from(validApiKey, 'utf8')
-        );
+        const keyBuf = Buffer.from(apiKey, 'utf8');
+        const validBuf = Buffer.from(validApiKey, 'utf8');
+        const isValid = keyBuf.length === validBuf.length && crypto.timingSafeEqual(keyBuf, validBuf);
 
         if (isValid) {
           (req as any).apiKeyValidated = true;
@@ -130,19 +129,16 @@ export const validateApiKeyWithRotation = (req: Request, res: Response, next: Ne
 
     let isValid = false;
 
+    const keyBuf = Buffer.from(apiKey, 'utf8');
     if (primaryApiKey) {
-      isValid = crypto.timingSafeEqual(
-        Buffer.from(apiKey, 'utf8'),
-        Buffer.from(primaryApiKey, 'utf8')
-      );
+      const primaryBuf = Buffer.from(primaryApiKey, 'utf8');
+      isValid = keyBuf.length === primaryBuf.length && crypto.timingSafeEqual(keyBuf, primaryBuf);
     }
 
     // Si la clé principale n'est pas valide, vérifier la clé secondaire
     if (!isValid && secondaryApiKey) {
-      isValid = crypto.timingSafeEqual(
-        Buffer.from(apiKey, 'utf8'),
-        Buffer.from(secondaryApiKey, 'utf8')
-      );
+      const secondaryBuf = Buffer.from(secondaryApiKey, 'utf8');
+      isValid = keyBuf.length === secondaryBuf.length && crypto.timingSafeEqual(keyBuf, secondaryBuf);
     }
 
     if (!isValid) {

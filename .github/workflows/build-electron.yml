@@ -11,8 +11,13 @@ env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  pentest:
+    name: 🔒 Pentest (obligatoire)
+    uses: ./.github/workflows/pentest.yml
+
   # Récupérer la version du package.json
   get-version:
+    needs: [ pentest ]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}

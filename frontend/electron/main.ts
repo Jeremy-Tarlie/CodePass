@@ -19,6 +19,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // │
 process.env.APP_ROOT = path.join(__dirname, '..')
 
+// En dev sous Windows : cache Electron dans le projet pour éviter "Accès refusé" (disk_cache)
+if (process.platform === 'win32' && process.env['VITE_DEV_SERVER_URL']) {
+  app.setPath('userData', path.join(process.env.APP_ROOT!, '.electron-user-data'))
+}
+
 // 🚧 Use ['ENV_NAME'] avoid vite:define plugin - Vite@2.x
 export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron')

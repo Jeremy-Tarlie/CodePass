@@ -2,6 +2,36 @@
 
 Ce document liste tous les secrets nécessaires pour le déploiement automatique.
 
+## 🔒 Pentest & Sécurité (workflow obligatoire)
+
+Les workflows **Deploy** et **Build Electron** exécutent d’abord le workflow **Pentest & Security** (`.github/workflows/pentest.yml`). Le build et le déploiement ne se lancent que si tous les tests de sécurité passent.
+
+Tests exécutés :
+- **npm audit** (back + frontend) – vulnérabilités haute/critique
+- **Gitleaks** – détection de secrets dans le code
+- **TruffleHog** – détection de secrets (800+ types, vérification des fuites)
+- **Semgrep** – SAST (OWASP Top 10, Express, JWT, Docker, React, Node, TypeScript)
+- **Bearer** – SAST données sensibles et mauvaise config (back + frontend)
+- **Trivy** – vulnérabilités fichiers + Dockerfile
+- **OWASP Dependency-Check** – CVE sur dépendances (back + frontend), échec si CVSS ≥ 7
+- **Hadolint** – lint du Dockerfile (bonnes pratiques)
+- **OWASP ZAP** – scan web (optionnel, si URL configurée)
+- **Dependency Review** – sur les pull requests
+- **CodeQL** – analyse de code (JavaScript/TypeScript)
+- **SBOM (Syft)** – Software Bill of Materials (back + frontend), artifacts CycloneDX
+- **License checker** – échec si dépendances GPL/AGPL (back + frontend)
+- **Lockfile-lint** – registres et HTTPS sur package-lock.json
+- **Trivy image** – scan de l’image Docker backend construite (CRITICAL/HIGH)
+- **Njsscan** – SAST Node.js/OWASP (back + frontend)
+- **ESLint security** – règles `eslint-plugin-security` sur le frontend
+- **OpenSSF Scorecard** – score de sécurité du dépôt (résultats dans l’onglet Security)
+- **Actionlint** – validation des workflows GitHub Actions
+
+Secrets / variables optionnels pour le pentest :
+- `GITLEAKS_LICENSE` : requis pour les dépôts d’organisation (gitleaks.io)
+- `SEMGREP_APP_TOKEN` : optionnel ; envoi des résultats vers Semgrep AppSec Platform
+- **Variable** `ZAP_TARGET_URL` : optionnel ; URL à scanner avec OWASP ZAP (Settings > Variables and secrets > Actions > Variables)
+
 ## 🔐 Secrets à configurer dans GitHub
 
 Allez dans **Settings > Secrets and variables > Actions** de votre repository GitHub et ajoutez les secrets suivants :

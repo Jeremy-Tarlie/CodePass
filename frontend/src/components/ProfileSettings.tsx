@@ -5,12 +5,14 @@ import { profileService, UserProfile } from '../services/profileService';
 
 interface ProfileSettingsProps {
   onClose: () => void;
+  /** Onglet à afficher à l'ouverture (ex: 'password' pour le rappel de changement) */
+  initialTab?: TabType;
 }
 
 type TabType = 'email' | 'password' | 'backup' | 'startup';
 
-const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
-  const [activeTab, setActiveTab] = useState<TabType>('email');
+const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps) => {
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -34,6 +36,11 @@ const ProfileSettings = ({ onClose }: ProfileSettingsProps) => {
   // États pour le démarrage automatique
   const [isAutoStartupEnabled, setIsAutoStartupEnabled] = useState<boolean>(false);
   const [isAutoStartupLoading, setIsAutoStartupLoading] = useState<boolean>(false);
+
+  // Synchroniser l'onglet actif avec initialTab à l'ouverture
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   // Charger le profil
   const loadProfile = useCallback(async () => {

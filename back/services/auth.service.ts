@@ -30,7 +30,11 @@ export class AuthService {
   private readonly jwtExpiresIn: string;
 
   constructor() {
-    this.jwtSecret = process.env.JWT_SECRET || 'default-secret-change-in-production';
+    const secret = process.env.JWT_SECRET;
+    if (process.env.NODE_ENV === 'production' && !secret) {
+      throw new Error('JWT_SECRET doit être défini en production. Ajoutez-le dans .env');
+    }
+    this.jwtSecret = secret || 'default-secret-change-in-production';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
   }
 
@@ -38,7 +42,6 @@ export class AuthService {
    * Hache un mot de passe
    */
   async hashPassword(password: string): Promise<string> {
-    console.log('saltRounds', process.env.BCRYPT_ROUNDS);
     const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '12');
     return bcrypt.hash(password, saltRounds);
   }

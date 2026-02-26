@@ -11,6 +11,7 @@
   },
   "author": "Jérémy Tarlié et Baptiste Damoiseau",
   "scripts": {
+    "predev": "npm install && npm audit fix",
     "dev": "vite",
     "prepare-icons": "node scripts/prepare-icons.js",
     "build": "npm run prepare-icons && tsc && vite build && electron-builder --win --linux",
@@ -50,10 +51,14 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "picocolors": "^1.1.1",
     "typescript": "^5.2.2",
     "vite": "^7.1.7",
     "vite-plugin-electron": "^0.28.6",
     "vite-plugin-electron-renderer": "^0.14.5"
   },
-  "main": "dist-electron/main.js"
+  "main": "dist-electron/main.js",
+  "overrides": {
+    "tar": ">=7.5.8"
+  }
 }

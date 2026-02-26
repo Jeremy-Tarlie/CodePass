@@ -30,7 +30,8 @@ export class ProfileController {
           email: true,
           backupEmail: true,
           createdAt: true,
-          updatedAt: true
+          updatedAt: true,
+          passwordChangedAt: true
         }
       });
 
@@ -231,10 +232,10 @@ export class ProfileController {
       // Hacher le nouveau mot de passe
       const hashedPassword = await encryptionService.hashPassword(newPassword);
 
-      // Mettre à jour le mot de passe
+      // Mettre à jour le mot de passe et la date de changement
       await prisma.user.update({
         where: { id: userId },
-        data: { password: hashedPassword }
+        data: { password: hashedPassword, passwordChangedAt: new Date() }
       });
 
       // Log de sécurité

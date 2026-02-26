@@ -59,7 +59,8 @@ export class AuthController {
         data: {
           email: email.toLowerCase(),
           password: hashedPassword,
-          encryptionKey
+          encryptionKey,
+          passwordChangedAt: new Date()
         },
         select: {
           id: true,
