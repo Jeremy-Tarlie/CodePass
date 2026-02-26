@@ -5,6 +5,8 @@ scan:
     - "dist"
     - "coverage"
     - "*.min.js"
+    # Fichier durci (textContent, pas d'innerHTML, messages fixes) ; Bearer signale encore replaceChildren(div).
+    - "public/reset-password.js"
 rule:
   # JWT : payload auth (userId, email, sessionId) volontaire pour le token de session.
   # FS/path : chemins de logs serveur (process.cwd()/logs, dates, noms de fichiers lus par readdir).
