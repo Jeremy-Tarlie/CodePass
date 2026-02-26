@@ -73,9 +73,7 @@ const Accueil = () => {
   }, [fetchPasswords]);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [visiblePasswords, setVisiblePasswords] = useState<
-    Record<string, boolean>
-  >({});
+  const [visiblePasswords, setVisiblePasswords] = useState<Map<string, boolean>>(new Map());
   const [formData, setFormData] = useState<PasswordForm>({
     title: "",
     username: "",
@@ -292,7 +290,11 @@ const Accueil = () => {
   }, []);
 
   const togglePasswordVisibility = useCallback((id: string) => {
-    setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+    setVisiblePasswords((prev) => {
+      const next = new Map(prev);
+      next.set(id, !next.get(id));
+      return next;
+    });
   }, []);
 
   const openEditPopup = useCallback((password: PasswordEntry) => {
@@ -334,8 +336,9 @@ const Accueil = () => {
       // Retourner une couleur par défaut si l'ID est invalide ou si la palette est vide
       return { lock: "text-gray-600", url: "text-gray-600", bg: "bg-gray-50" };
     }
-    const index = parseInt(id) % colorPalette.length;
-    return colorPalette[index];
+    const index = parseInt(id, 10) % colorPalette.length;
+    const safeIndex = Math.max(0, Math.min(index, colorPalette.length - 1));
+    return colorPalette.at(safeIndex) ?? { lock: "text-gray-600", url: "text-gray-600", bg: "bg-gray-50" };
   }, [colorPalette]);
 
   return (
@@ -490,7 +493,7 @@ const Accueil = () => {
                           <div className="relative flex-1 min-w-[200px]">
                             <input
                               type={
-                                visiblePasswords[item.id!] ? "text" : "password"
+                                visiblePasswords.get(item.id!) ? "text" : "password"
                               }
                               value={item.password}
                               readOnly
@@ -502,12 +505,12 @@ const Accueil = () => {
                               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                               disabled={isLoading}
                               aria-label={
-                                visiblePasswords[item.id!]
+                                visiblePasswords.get(item.id!)
                                   ? "Masquer le mot de passe"
                                   : "Afficher le mot de passe"
                               }
                             >
-                              {visiblePasswords[item.id!] ? (
+                              {visiblePasswords.get(item.id!) ? (
                                 <EyeOff size={18} />
                               ) : (
                                 <Eye size={18} />

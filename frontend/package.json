@@ -51,6 +51,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "eslint-plugin-security": "^4.0.0",
     "picocolors": "^1.1.1",
     "typescript": "^5.2.2",
     "vite": "^7.1.7",
