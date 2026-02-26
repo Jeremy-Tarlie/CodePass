@@ -152,7 +152,7 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`])/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\]!@#$%^&*()_+\-=[{};':"\\|,.<>/?~`])/;
     if (!passwordRegex.test(newPassword)) {
       toast.error('Le mot de passe doit contenir une minuscule, une majuscule, un chiffre et un caractère spécial');
       return;

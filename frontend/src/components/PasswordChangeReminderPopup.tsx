@@ -2,14 +2,6 @@ import { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { Lock, ExternalLink, Key, CheckCircle, X } from 'lucide-react';
 
-const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
-
-export function shouldShowPasswordReminder(passwordChangedAt: string | null): boolean {
-  if (!passwordChangedAt) return true;
-  const changed = new Date(passwordChangedAt).getTime();
-  return Date.now() - changed >= SIX_MONTHS_MS;
-}
-
 function generateSecurePassword(): string {
   const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const lowercase = 'abcdefghijklmnopqrstuvwxyz';

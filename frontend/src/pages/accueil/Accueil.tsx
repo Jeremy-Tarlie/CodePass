@@ -24,7 +24,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { passwordService, PasswordEntry, CreatePasswordData, UpdatePasswordData } from "../../services/passwordService";
 import { profileService, UserProfile } from "../../services/profileService";
 import ProfileSettings from "../../components/ProfileSettings";
-import PasswordChangeReminderPopup, { shouldShowPasswordReminder } from "../../components/PasswordChangeReminderPopup";
+import PasswordChangeReminderPopup from "../../components/PasswordChangeReminderPopup";
+import { shouldShowPasswordReminder } from "../../utils/passwordReminder";
 import UpdateNotification from "../../components/UpdateNotification";
 
 type PasswordForm = {
