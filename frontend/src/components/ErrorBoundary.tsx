@@ -71,7 +71,8 @@ class ErrorBoundary extends Component<Props, State> {
               Nous nous excusons pour ce désagrément. Une erreur inattendue s'est produite dans l'application.
             </p>
 
-            {/* Détails de l'erreur en mode développement */}
+            {/* Détails de l'erreur en mode développement (NODE_ENV est une var. de build, pas un secret) */}
+            {/* eslint-disable-next-line security/detect-process-env */}
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="mb-6 p-4 bg-gray-100 rounded-lg text-left">
                 <h3 className="font-semibold text-gray-800 mb-2">Détails de l'erreur :</h3>

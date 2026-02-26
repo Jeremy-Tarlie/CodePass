@@ -1,0 +1,10 @@
+# Config Bearer pour le frontend - exclure artefacts de build et process Electron
+scan:
+  skip-path:
+    - "node_modules"
+    - "dist"
+    - "dist-electron"
+    - "coverage"
+    - "electron"
+rule:
+  skip-rule: []

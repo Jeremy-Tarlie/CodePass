@@ -31,6 +31,7 @@ Secrets / variables optionnels pour le pentest :
 - `GITLEAKS_LICENSE` : requis pour les dépôts d’organisation (gitleaks.io)
 - `SEMGREP_APP_TOKEN` : optionnel ; envoi des résultats vers Semgrep AppSec Platform
 - **Variable** `ZAP_TARGET_URL` : optionnel ; URL à scanner avec OWASP ZAP (Settings > Variables and secrets > Actions > Variables)
+- **Variable** `CODE_SCANNING_ENABLED` : mettre à `true` quand Code scanning est activé (Settings > Code security and analysis) pour exécuter le job CodeQL ; sinon le job est ignoré
 
 ## 🔐 Secrets à configurer dans GitHub
 

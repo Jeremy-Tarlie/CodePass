@@ -1,8 +1,8 @@
 # Dockerfile optimisé pour la production
 FROM node:18-alpine AS builder
 
-# Installer OpenSSL pour Prisma (version épinglée DL3018)
-RUN apk add --no-cache openssl=3.1.8-r0
+# Installer OpenSSL pour Prisma (sans pin pour compatibilité Alpine variable en CI)
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
@@ -21,8 +21,8 @@ RUN npx prisma generate && npm run build && npm prune --production
 # Image de production
 FROM node:18-alpine AS production
 
-# Installer OpenSSL pour Prisma (version épinglée DL3018)
-RUN apk add --no-cache openssl=3.1.8-r0
+# Installer OpenSSL pour Prisma (sans pin pour compatibilité Alpine variable en CI)
+RUN apk add --no-cache openssl
 
 # Créer un utilisateur non-root pour la sécurité (DL3059 consolidation)
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
