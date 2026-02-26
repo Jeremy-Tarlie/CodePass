@@ -24,19 +24,22 @@ const csrf = urlParams.get('csrf');
 let isValidToken = false;
 let userEmail = '';
 
-// Fonction pour afficher les alertes
+// Types d'alerte autorisés (évite XSS via la classe CSS)
+const ALLOWED_ALERT_TYPES = ['error', 'success', 'info'];
+
+// Fonction pour afficher les alertes (sans innerHTML pour éviter XSS)
 function showAlert(message, type = 'error') {
     const alertContainer = document.getElementById('alertContainer');
-    alertContainer.innerHTML = `
-        <div class="alert alert-${type}">
-            ${message}
-        </div>
-    `;
+    const safeType = ALLOWED_ALERT_TYPES.includes(type) ? type : 'error';
+    const div = document.createElement('div');
+    div.className = `alert alert-${safeType}`;
+    div.textContent = message;
+    alertContainer.replaceChildren(div);
 }
 
 // Fonction pour masquer les alertes
 function hideAlert() {
-    document.getElementById('alertContainer').innerHTML = '';
+    document.getElementById('alertContainer').replaceChildren();
 }
 
 // Fonction pour basculer la visibilité du mot de passe

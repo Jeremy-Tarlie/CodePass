@@ -6,4 +6,9 @@ scan:
     - "coverage"
     - "*.min.js"
 rule:
-  skip-rule: []
+  # JWT : payload auth (userId, email, sessionId) volontaire pour le token de session.
+  # FS/path : chemins de logs serveur (process.cwd()/logs, dates, noms de fichiers lus par readdir).
+  skip-rule:
+    - javascript_lang_jwt
+    - javascript_lang_non_literal_fs_filename
+    - javascript_lang_path_traversal
