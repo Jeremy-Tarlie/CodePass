@@ -1,8 +1,8 @@
 # Dockerfile optimisé pour la production
 FROM node:18-alpine AS builder
 
-# Installer OpenSSL pour Prisma
-RUN apk add --no-cache openssl
+# Installer OpenSSL pour Prisma (version épinglée DL3018)
+RUN apk add --no-cache openssl=3.1.8-r0
 
 WORKDIR /app
 
@@ -15,24 +15,17 @@ RUN npm i && npm cache clean --force
 # Copier le code source
 COPY . .
 
-# Générer le client Prisma
-RUN npx prisma generate
-
-# Construire l'application
-RUN npm run build
-
-# Nettoyer les devDependencies après la compilation
-RUN npm prune --production
+# Générer Prisma, construire et nettoyer (DL3059 consolidation)
+RUN npx prisma generate && npm run build && npm prune --production
 
 # Image de production
 FROM node:18-alpine AS production
 
-# Installer OpenSSL pour Prisma
-RUN apk add --no-cache openssl
+# Installer OpenSSL pour Prisma (version épinglée DL3018)
+RUN apk add --no-cache openssl=3.1.8-r0
 
-# Créer un utilisateur non-root pour la sécurité
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+# Créer un utilisateur non-root pour la sécurité (DL3059 consolidation)
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
 WORKDIR /app
 

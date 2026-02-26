@@ -1,9 +1,9 @@
 import { app, BrowserWindow, protocol, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { exec } from 'child_process'
 import { homedir } from 'os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import fs from 'node:fs'
 
 // const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -110,21 +110,22 @@ Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
 `
-      exec(`mkdir -p "${autostartDir}" && echo '${desktopContent}' > "${desktopFile}"`, (error: Error | null | undefined) => {
-        if (error) {
-          console.error('❌ Erreur lors de l\'activation du démarrage automatique:', error)
-        } else {
-          console.log('✅ Démarrage automatique activé')
-        }
-      })
+      try {
+        fs.mkdirSync(autostartDir, { recursive: true })
+        fs.writeFileSync(desktopFile, desktopContent, 'utf8')
+        console.log('✅ Démarrage automatique activé')
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'activation du démarrage automatique:', error)
+      }
     } else {
-      exec(`rm -f "${desktopFile}"`, (error: Error | null | undefined) => {
-        if (error) {
-          console.error('❌ Erreur lors de la désactivation du démarrage automatique:', error)
-        } else {
-          console.log('✅ Démarrage automatique désactivé')
+      try {
+        if (fs.existsSync(desktopFile)) {
+          fs.unlinkSync(desktopFile)
         }
-      })
+        console.log('✅ Démarrage automatique désactivé')
+      } catch (error) {
+        console.error('❌ Erreur lors de la désactivation du démarrage automatique:', error)
+      }
     }
   }
 }
@@ -148,10 +149,7 @@ function isAutoStartupEnabled(): Promise<boolean> {
     } else if (process.platform === 'linux') {
       const appName = app.getName()
       const desktopFile = homedir() + `/.config/autostart/${appName}.desktop`
-      
-      exec(`test -f "${desktopFile}"`, (error: Error | null | undefined) => {
-        resolve(!error)
-      })
+      resolve(fs.existsSync(desktopFile))
     } else {
       resolve(false)
     }
