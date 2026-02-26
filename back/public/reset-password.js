@@ -116,7 +116,7 @@ async function validateToken() {
             }
             return true;
         } else {
-            showAlert(data.message || 'Token invalide ou expiré. Veuillez refaire une demande.');
+            showAlert('Token invalide ou expiré. Veuillez refaire une demande.');
             return false;
         }
     } catch (error) {
@@ -147,7 +147,7 @@ async function resetPassword(newPassword) {
         if (data.success) {
             showAlert('Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.', 'success');
         } else {
-            showAlert(data.message || 'Erreur lors de la réinitialisation du mot de passe.');
+            showAlert('Erreur lors de la réinitialisation du mot de passe.');
         }
     } catch (error) {
         console.error('Erreur lors de la réinitialisation:', error);
