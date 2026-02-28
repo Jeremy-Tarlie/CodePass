@@ -24,7 +24,6 @@ Tests exécutés :
 - **Trivy image** – scan de l’image Docker backend construite (CRITICAL/HIGH)
 - **Njsscan** – SAST Node.js/OWASP (back + frontend)
 - **ESLint security** – règles `eslint-plugin-security` sur le frontend
-- **OpenSSF Scorecard** – score de sécurité du dépôt (résultats dans l’onglet Security)
 - **Actionlint** – validation des workflows GitHub Actions
 
 Secrets / variables optionnels pour le pentest :
