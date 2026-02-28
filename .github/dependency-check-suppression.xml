@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <!-- ejs CVE-2023-29827 : disputé par les mainteneurs, pas de correctif officiel (usage avec entrée non fiable = hors scope). Voir https://github.com/mde/ejs/issues/735 -->
+  <suppress>
+    <notes><![CDATA[ejs CVE-2023-29827 disputed by maintainers, no fix. Do not pass untrusted input to EJS render().]]></notes>
+    <packageUrl regex="true">pkg:npm/ejs@.*</packageUrl>
+    <cve>CVE-2023-29827</cve>
+  </suppress>
+</suppressions>
