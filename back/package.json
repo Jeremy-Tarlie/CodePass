@@ -53,6 +53,7 @@
   "author": "Votre nom",
   "license": "MIT",
   "overrides": {
-    "tar": ">=7.5.8"
+    "tar": ">=7.5.8",
+    "minimatch": "3.1.3"
   }
 }
