@@ -1,29 +1,27 @@
 name: Build and Release Electron App
 
+# Se déclenche après que "Pentest & Security" ait réussi (workflow_run)
 on:
-  push:
-    branches:
-      - main
-      - master
+  workflow_run:
+    workflows: ["🔒 Pentest & Security"]
+    types: [completed]
+    branches: [main, master]
   workflow_dispatch:
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  pentest:
-    name: 🔒 Pentest (obligatoire)
-    uses: ./.github/workflows/pentest.yml
-
-  # Récupérer la version du package.json
   get-version:
-    needs: [ pentest ]
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: Get version from package.json
         id: version
@@ -38,6 +36,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -84,6 +84,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -130,6 +132,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -178,6 +182,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
         
       - name: Download all artifacts
         uses: actions/download-artifact@v4
