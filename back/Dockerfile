@@ -20,8 +20,8 @@ COPY . .
 ARG DATABASE_URL=postgresql://localhost:5432/dummy
 ENV DATABASE_URL=${DATABASE_URL}
 
-# Générer Prisma (client dans ./generated), construire et nettoyer (DL3059 consolidation)
-RUN npx prisma generate && npm run build && npm prune --production
+# Générer Prisma (client dans ./generated), construire, copier le client dans dist pour require(), nettoyer
+RUN npx prisma generate && npm run build && cp -r /app/generated /app/dist/ && npm prune --production
 
 # Image de production
 FROM node:20-alpine AS production
@@ -38,7 +38,6 @@ WORKDIR /app
 # Copier les fichiers nécessaires depuis le builder
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/generated ./generated
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
