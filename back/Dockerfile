@@ -16,7 +16,7 @@ RUN npm i && npm cache clean --force
 # Copier le code source
 COPY . .
 
-# Prisma 7 : prisma.config.ts exige DATABASE_URL (valeur factice au build, réelle au runtime)
+# Prisma 6 : DATABASE_URL pour prisma generate (schéma + prisma.config.ts)
 ARG DATABASE_URL=postgresql://localhost:5432/dummy
 ENV DATABASE_URL=${DATABASE_URL}
 
