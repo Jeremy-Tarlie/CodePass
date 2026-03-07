@@ -24,7 +24,6 @@ import { useAuth } from "../../hooks/useAuth";
 import { passwordService, PasswordEntry } from "../../services/passwordService";
 import { profileService, UserProfile } from "../../services/profileService";
 import ProfileSettings from "../../components/ProfileSettings";
-import PasswordChangeReminderPopup from "../../components/PasswordChangeReminderPopup";
 import { shouldShowPasswordReminder } from "../../utils/passwordReminder";
 
 type PasswordForm = {
@@ -100,10 +99,8 @@ const Accueil = () => {
     fetchProfile();
   }, [fetchProfile]);
 
-  const showPasswordReminder =
-    profile !== null &&
-    !showProfileSettings &&
-    shouldShowPasswordReminder(profile.passwordChangedAt ?? null);
+  const passwordOverdue =
+    profile !== null && shouldShowPasswordReminder(profile.passwordChangedAt ?? null);
 
   const filteredPasswords = useMemo(
     () =>
@@ -130,34 +127,35 @@ const Accueil = () => {
     const left = Math.max(2, currentPage - delta);
     const right = Math.min(totalPages - 1, currentPage + delta);
     const range: (JSX.Element | string)[] = [];
+    const btnClass = "min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-sm font-medium touch-target";
     range.push(
       <button
         key={1}
         onClick={() => setCurrentPage(1)}
-        className={`px-3 py-1 rounded-md text-sm ${currentPage === 1 ? "bg-indigo-600 text-white" : "bg-white text-gray-700 hover:bg-gray-300"}`}
+        className={`${btnClass} ${currentPage === 1 ? "bg-indigo-600 text-white" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}
       >
         1
       </button>
     );
-    if (left > 2) range.push(<span key="l">...</span>);
+    if (left > 2) range.push(<span key="l" className="self-center text-gray-400">...</span>);
     for (let i = left; i <= right; i++) {
       range.push(
         <button
           key={i}
           onClick={() => setCurrentPage(i)}
-          className={`px-3 py-1 rounded-md text-sm ${currentPage === i ? "bg-indigo-600 text-white" : "bg-white text-gray-700 hover:bg-gray-300"}`}
+          className={`${btnClass} ${currentPage === i ? "bg-indigo-600 text-white" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}
         >
           {i}
         </button>
       );
     }
-    if (right < totalPages - 1) range.push(<span key="r">...</span>);
+    if (right < totalPages - 1) range.push(<span key="r" className="self-center text-gray-400">...</span>);
     if (totalPages > 1) {
       range.push(
         <button
           key={totalPages}
           onClick={() => setCurrentPage(totalPages)}
-          className={`px-3 py-1 rounded-md text-sm ${currentPage === totalPages ? "bg-indigo-600 text-white" : "bg-white text-gray-700 hover:bg-gray-300"}`}
+          className={`${btnClass} ${currentPage === totalPages ? "bg-indigo-600 text-white" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}`}
         >
           {totalPages}
         </button>
@@ -302,23 +300,37 @@ const Accueil = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10 safe-area-top">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <Lock className="text-indigo-600" /> CodePass
+    <div className="min-h-screen min-h-dvh bg-gradient-to-br from-indigo-50 to-blue-100">
+      <header className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-10 safe-area-top border-b border-gray-100">
+        <div className="container-mobile py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2 truncate">
+                <Lock className="text-indigo-600 flex-shrink-0" size={22} /> CodePass
               </h1>
-              {user && <p className="text-xs text-gray-500">{user.email}</p>}
+              {user && <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>}
+              {passwordOverdue && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileSettingsInitialTab("password");
+                    setShowProfileSettings(true);
+                  }}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 active:scale-[0.98] transition-transform touch-target"
+                  title="Changer votre mot de passe"
+                >
+                  <Lock className="w-3.5 h-3.5 flex-shrink-0" />
+                  Mot de passe &gt; 6 mois
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => setShowProfileSettings(true)}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-3 rounded-lg flex items-center gap-1"
+                className="touch-target min-h-[44px] bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                 disabled={isLoading}
               >
-                <User size={18} /> Profil
+                <User size={20} /> <span className="hidden sm:inline">Profil</span>
               </button>
               <button
                 onClick={() => {
@@ -326,10 +338,10 @@ const Accueil = () => {
                   setEditingId(null);
                   setPopUp(true);
                 }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-3 rounded-lg flex items-center gap-1"
+                className="touch-target min-h-[44px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
                 disabled={isLoading}
               >
-                <Plus size={18} /> Nouveau
+                <Plus size={20} /> <span className="hidden sm:inline">Nouveau</span>
               </button>
               <button
                 onClick={async () => {
@@ -339,19 +351,19 @@ const Accueil = () => {
                     toast.error("Erreur lors de la déconnexion");
                   }
                 }}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-lg flex items-center gap-1"
+                className="touch-target min-h-[44px] bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
               >
-                <LogOut size={18} /> Déconnexion
+                <LogOut size={20} /> <span className="hidden sm:inline">Déconnexion</span>
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="p-4 pb-8">
+      <main className="container-mobile py-4 pb-8 safe-area-bottom">
         <div className="w-full max-w-4xl mx-auto mb-4">
-          <div className="relative bg-white rounded-xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <div className="relative bg-white rounded-xl shadow-sm border border-gray-200">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Rechercher..."
@@ -360,28 +372,28 @@ const Accueil = () => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl"
+              className="w-full pl-10 pr-4 py-3.5 min-h-[48px] border-0 rounded-xl text-base"
               disabled={isLoading}
             />
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 w-full max-w-6xl mx-auto divide-y divide-gray-100">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 w-full max-w-4xl mx-auto divide-y divide-gray-100 overflow-hidden">
           {paginatedPasswords.length > 0 ? (
             paginatedPasswords.map((item) => {
               const color = getRandomColor(item.id);
               return (
-                <div key={item.id} className="p-4 hover:bg-gray-50">
+                <div key={item.id} className="p-4 sm:p-4 hover:bg-gray-50 active:bg-gray-50 transition-colors">
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-lg ${color.bg}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`p-2.5 sm:p-3 rounded-xl flex-shrink-0 ${color.bg}`}>
                         <Lock className={color.lock} size={20} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2 truncate">
                           {item.title}
                           {item.notes && (
-                            <span className="text-gray-400" title={item.notes}>
+                            <span className="text-gray-400 flex-shrink-0" title={item.notes}>
                               <Info size={14} />
                             </span>
                           )}
@@ -393,46 +405,47 @@ const Accueil = () => {
                             rel="noopener noreferrer"
                             className={`${color.url} text-sm flex items-center gap-1 truncate`}
                           >
-                            <Globe size={14} /> {getHostname(item.url)}
+                            <Globe size={14} className="flex-shrink-0" /> <span className="truncate">{getHostname(item.url)}</span>
                           </a>
                         )}
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-stretch gap-2 sm:gap-3">
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(item.username);
                           toast.success("Nom d'utilisateur copié !");
                         }}
-                        className="flex items-center gap-2 py-2 text-sm text-gray-700"
+                        className="flex items-center gap-2 py-2.5 px-2 text-sm text-gray-700 min-h-[44px] rounded-lg hover:bg-gray-100 active:bg-gray-200"
                       >
-                        <Mail size={16} className="text-gray-500" />
-                        <span className="truncate max-w-[120px]">{item.username}</span>
+                        <Mail size={18} className="text-gray-500 flex-shrink-0" />
+                        <span className="truncate max-w-[140px] sm:max-w-[200px]">{item.username}</span>
                       </button>
-                      <div className="relative flex-1 min-w-[140px]">
+                      <div className="relative flex-1 min-w-[120px] sm:min-w-[160px]">
                         <input
                           type={visiblePasswords.get(item.id) ? "text" : "password"}
                           value={item.password}
                           readOnly
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono bg-gray-50"
+                          className="w-full h-[44px] border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono bg-gray-50"
                         />
                         <button
                           onClick={() => togglePasswordVisibility(item.id)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-400 rounded-lg hover:bg-gray-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
                           disabled={isLoading}
+                          type="button"
                         >
-                          {visiblePasswords.get(item.id) ? <EyeOff size={18} /> : <Eye size={18} />}
+                          {visiblePasswords.get(item.id) ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => copyPassword(item.password)} className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg" title="Copier">
-                          <Copy size={18} />
+                        <button onClick={() => copyPassword(item.password)} className="touch-target min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-xl active:scale-95" title="Copier">
+                          <Copy size={20} />
                         </button>
-                        <button onClick={() => openEditPopup(item)} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Modifier">
-                          <Edit2 size={18} />
+                        <button onClick={() => openEditPopup(item)} className="touch-target min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl active:scale-95" title="Modifier">
+                          <Edit2 size={20} />
                         </button>
-                        <button onClick={() => confirmDeletePassword(item.id, item.title)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Supprimer">
-                          <Trash2 size={18} />
+                        <button onClick={() => confirmDeletePassword(item.id, item.title)} className="touch-target min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl active:scale-95" title="Supprimer">
+                          <Trash2 size={20} />
                         </button>
                       </div>
                     </div>
@@ -451,10 +464,10 @@ const Accueil = () => {
                 {!searchTerm && (
                   <button
                     onClick={() => setPopUp(true)}
-                    className="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium"
+                    className="mt-4 inline-flex items-center justify-center gap-2 min-h-[48px] px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-medium touch-target"
                     disabled={isLoading}
                   >
-                    <Plus size={16} className="mr-2" /> Ajouter un mot de passe
+                    <Plus size={20} /> Ajouter un mot de passe
                   </button>
                 )}
               </div>
@@ -463,7 +476,7 @@ const Accueil = () => {
         </div>
 
         {filteredPasswords.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-6xl mx-auto mt-4 gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-4xl mx-auto mt-4 gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Afficher</span>
               <select
@@ -472,7 +485,7 @@ const Accueil = () => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white"
+                className="border border-gray-300 rounded-xl px-3 py-2.5 min-h-[44px] text-sm bg-white touch-target"
               >
                 <option value={10}>10</option>
                 <option value={25}>25</option>
@@ -484,17 +497,17 @@ const Accueil = () => {
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || isLoading}
-                  className="px-3 py-1 rounded-md text-sm bg-white text-gray-700 disabled:opacity-50"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 disabled:opacity-50 touch-target"
                 >
-                  <ArrowLeft size={16} />
+                  <ArrowLeft size={20} />
                 </button>
                 {getPaginationRange()}
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages || isLoading}
-                  className="px-3 py-1 rounded-md text-sm bg-white text-gray-700 disabled:opacity-50"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-sm bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 disabled:opacity-50 touch-target"
                 >
-                  <ArrowRight size={16} />
+                  <ArrowRight size={20} />
                 </button>
               </div>
             )}
@@ -503,28 +516,28 @@ const Accueil = () => {
       </main>
 
       {confirmDelete.id && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/50" onClick={() => setConfirmDelete({ id: null, title: "" })} />
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full relative">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-4">
+          <div className="absolute inset-0 bg-gray-900/50" onClick={() => setConfirmDelete({ id: null, title: "" })} aria-hidden />
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full relative safe-area-bottom">
             <div className="flex flex-col items-center gap-4">
               <div className="p-3 rounded-full bg-red-50 text-red-600">
-                <Trash2 size={24} />
+                <Trash2 size={28} />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 text-center">
                 Supprimer &quot;{confirmDelete.title}&quot; ?
               </h3>
               <p className="text-sm text-gray-600 text-center">Cette action est irréversible.</p>
               <div className="flex gap-3 w-full">
                 <button
                   onClick={() => setConfirmDelete({ id: null, title: "" })}
-                  className="flex-1 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="flex-1 min-h-[48px] py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 font-medium touch-target"
                   disabled={isLoading}
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deletePassword(confirmDelete.id!)}
-                  className="flex-1 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white font-medium"
+                  className="flex-1 min-h-[48px] py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-xl text-white font-medium touch-target"
                   disabled={isLoading}
                 >
                   {isLoading ? "..." : "Supprimer"}
@@ -536,86 +549,88 @@ const Accueil = () => {
       )}
 
       {popUp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="absolute inset-0 bg-gray-100/90" onClick={() => !isLoading && setPopUp(false)} />
-          <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl">
-            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="absolute inset-0 bg-gray-900/60 sm:bg-gray-100/90" onClick={() => !isLoading && setPopUp(false)} aria-hidden />
+          <div className="relative w-full max-w-lg max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto bg-white rounded-t-2xl sm:rounded-2xl shadow-xl safe-area-bottom">
+            <div className="sticky top-0 bg-white p-4 sm:p-5 border-b flex justify-between items-center gap-3 safe-area-top z-10">
+              <h3 className="text-lg font-semibold text-gray-900 truncate">
                 {editingId ? "Modifier le mot de passe" : "Nouveau mot de passe"}
               </h3>
-              <button type="button" onClick={() => !isLoading && setPopUp(false)} className="p-1 rounded text-gray-400 hover:bg-gray-100" disabled={isLoading}>
-                <X size={20} />
+              <button type="button" onClick={() => !isLoading && setPopUp(false)} className="touch-target min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 active:bg-gray-200 flex-shrink-0" disabled={isLoading}>
+                <X size={22} />
               </button>
             </div>
-            <div className="p-4 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4 pb-[env(safe-area-inset-bottom)]">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Titre *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Titre *</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 min-h-[48px] text-base"
                   placeholder="Ex: Gmail, Facebook..."
                   disabled={isLoading}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nom d'utilisateur *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom d'utilisateur *</label>
                 <input
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 min-h-[48px] text-base"
                   placeholder="nom_utilisateur"
                   disabled={isLoading}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">URL (optionnel)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">URL (optionnel)</label>
                 <input
                   type="url"
                   value={formData.url}
                   onChange={(e) => setFormData((prev) => ({ ...prev, url: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 min-h-[48px] text-base"
                   placeholder="https://exemple.com"
                   disabled={isLoading}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe *</label>
-                <div className="flex gap-2 flex-wrap">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe *</label>
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={formData.password}
                     onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                    className="flex-1 min-w-[120px] border border-gray-300 rounded-md px-3 py-2"
+                    className="flex-1 min-w-0 border border-gray-300 rounded-xl px-4 py-3 min-h-[48px] text-base"
                     placeholder="Mot de passe"
                     disabled={isLoading}
                   />
-                  <button type="button" onClick={generatePassword} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2" disabled={isLoading}>
-                    <RefreshCw size={18} /> Générer
-                  </button>
-                  <button type="button" onClick={() => copyPassword(formData.password)} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2" disabled={isLoading}>
-                    <Copy size={18} /> Copier
-                  </button>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={generatePassword} className="flex-1 min-h-[48px] bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 font-medium touch-target" disabled={isLoading}>
+                      <RefreshCw size={20} /> Générer
+                    </button>
+                    <button type="button" onClick={() => copyPassword(formData.password)} className="flex-1 min-h-[48px] bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 font-medium touch-target" disabled={isLoading}>
+                      <Copy size={20} /> Copier
+                    </button>
+                  </div>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optionnel)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes (optionnel)</label>
                 <textarea
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base min-h-[100px]"
                   rows={3}
                   placeholder="Notes..."
                   disabled={isLoading}
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-4 border-t">
-                <button type="button" onClick={() => !isLoading && setPopUp(false)} className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" disabled={isLoading}>
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button type="button" onClick={() => !isLoading && setPopUp(false)} className="min-h-[48px] px-5 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 active:bg-gray-100 font-medium touch-target" disabled={isLoading}>
                   Annuler
                 </button>
-                <button type="button" onClick={handleSubmit} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center gap-2" disabled={isLoading}>
+                <button type="button" onClick={handleSubmit} className="min-h-[48px] px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl flex items-center gap-2 font-medium touch-target" disabled={isLoading}>
                   {isLoading ? "..." : editingId ? "Mettre à jour" : "Enregistrer"}
                 </button>
               </div>
@@ -631,16 +646,6 @@ const Accueil = () => {
             setShowProfileSettings(false);
             setProfileSettingsInitialTab("email");
             fetchProfile();
-          }}
-        />
-      )}
-
-      {showPasswordReminder && (
-        <PasswordChangeReminderPopup
-          onOpenSettings={() => setShowProfileSettings(true)}
-          onOpenPasswordTab={() => {
-            setProfileSettingsInitialTab("password");
-            setShowProfileSettings(true);
           }}
         />
       )}

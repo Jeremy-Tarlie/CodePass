@@ -24,9 +24,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { passwordService, PasswordEntry, CreatePasswordData, UpdatePasswordData } from "../../services/passwordService";
 import { profileService, UserProfile } from "../../services/profileService";
 import ProfileSettings from "../../components/ProfileSettings";
-import PasswordChangeReminderPopup from "../../components/PasswordChangeReminderPopup";
-import { shouldShowPasswordReminder } from "../../utils/passwordReminder";
 import UpdateNotification from "../../components/UpdateNotification";
+import { shouldShowPasswordReminder } from "../../utils/passwordReminder";
 
 type PasswordForm = {
   id?: string;
@@ -109,10 +108,8 @@ const Accueil = () => {
     fetchProfile();
   }, [fetchProfile]);
 
-  const showPasswordReminder =
-    profile !== null &&
-    !showProfileSettings &&
-    shouldShowPasswordReminder(profile.passwordChangedAt ?? null);
+  const passwordOverdue =
+    profile !== null && shouldShowPasswordReminder(profile.passwordChangedAt ?? null);
 
   const filteredPasswords = useMemo(() => {
     return passwords.filter(
@@ -357,6 +354,20 @@ const Accueil = () => {
                 <p className="text-xs text-gray-500 mt-1">
                   Connecté en tant que: {user.email}
                 </p>
+              )}
+              {passwordOverdue && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileSettingsInitialTab('password');
+                    setShowProfileSettings(true);
+                  }}
+                  className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-300 hover:bg-amber-200 transition-colors"
+                  title="Changer votre mot de passe"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  Mot de passe &gt; 6 mois
+                </button>
               )}
             </div>
             <div className="flex items-center gap-3">
@@ -898,16 +909,6 @@ const Accueil = () => {
             setShowProfileSettings(false);
             setProfileSettingsInitialTab('email');
             fetchProfile();
-          }}
-        />
-      )}
-
-      {showPasswordReminder && (
-        <PasswordChangeReminderPopup
-          onOpenSettings={() => setShowProfileSettings(true)}
-          onOpenPasswordTab={() => {
-            setProfileSettingsInitialTab('password');
-            setShowProfileSettings(true);
           }}
         />
       )}

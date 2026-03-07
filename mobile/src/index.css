@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+/* --- Variables responsive (safe areas + touch) --- */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --touch-min: 44px;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+body {
+  min-height: 100dvh;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  padding-bottom: var(--safe-bottom);
+}
+
 button,
 a,
 [role="button"],
@@ -8,6 +29,12 @@ input[type="submit"],
 input[type="reset"],
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Zones de touch minimales 44px (recommandation Apple/Android) */
+.touch-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
 }
 
 button:disabled,
@@ -37,7 +64,35 @@ input:disabled {
   overflow: hidden;
 }
 
-/* Safe area pour encoche / barre de statut sur mobile */
+/* Safe areas pour encoche / barre de statut / home indicator */
 .safe-area-top {
-  padding-top: env(safe-area-inset-top, 0);
+  padding-top: var(--safe-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+
+/* Conteneur responsive avec padding horizontal cohérent */
+.container-mobile {
+  width: 100%;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: max(1rem, var(--safe-left));
+  padding-right: max(1rem, var(--safe-right));
+}
+
+@media (min-width: 640px) {
+  .container-mobile {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-mobile {
+    max-width: 1024px;
+  }
 }

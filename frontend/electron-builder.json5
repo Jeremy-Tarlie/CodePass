@@ -46,15 +46,8 @@
     "protocols": [
       { "name": "CodePass", "schemes": ["gestmdp"] }
     ],
-    "publisherName": "CodePass Team",
     "requestedExecutionLevel": "asInvoker",
-    "verifyUpdateCodeSignature": false,
-    // Signature de code Windows (nécessite un certificat)
-    // Pour signer, définir les variables d'environnement :
-    // CSC_LINK : chemin vers le fichier .pfx
-    // CSC_KEY_PASSWORD : mot de passe du certificat
-    "signAndEditExecutable": true,
-    "signDlls": false
+    "verifyUpdateCodeSignature": false
   },
 
   "nsis": {
@@ -91,10 +84,12 @@
     ],
 
     "desktop": {
-      "Name": "CodePass",
-      "Comment": "Gestionnaire de mots de passe",
-      "Keywords": "password;manager;security;",
-      "StartupWMClass": "gest-mdp"
+      "entry": {
+        "Name": "CodePass",
+        "Comment": "Gestionnaire de mots de passe",
+        "Keywords": "password;manager;security;",
+        "StartupWMClass": "gest-mdp"
+      }
     }
   }
 }

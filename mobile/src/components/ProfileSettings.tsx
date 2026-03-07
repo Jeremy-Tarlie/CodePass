@@ -140,17 +140,17 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md" onClick={onClose} />
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-white">Mon Profil</h2>
-              <p className="text-slate-400 text-sm">{profile?.email || 'Chargement...'}</p>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-md" onClick={onClose} aria-hidden />
+      <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-3xl max-h-[92dvh] sm:max-h-[90vh] overflow-hidden flex flex-col safe-area-bottom">
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 sm:px-6 py-4 safe-area-top">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg sm:text-xl font-bold text-white">Mon Profil</h2>
+              <p className="text-slate-400 text-sm truncate">{profile?.email || 'Chargement...'}</p>
             </div>
-            <button onClick={onClose} className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white" disabled={isLoading}>
-              <X size={20} />
+            <button onClick={onClose} className="touch-target min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex-shrink-0" disabled={isLoading}>
+              <X size={22} />
             </button>
           </div>
         </div>
@@ -160,15 +160,15 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl font-medium text-sm ${activeTab === tab.id ? 'bg-white text-slate-800 shadow-md' : 'text-slate-500 hover:bg-white/60'}`}
+                className={`flex items-center gap-2 px-4 py-3 min-h-[44px] rounded-xl font-medium text-sm touch-target ${activeTab === tab.id ? 'bg-white text-slate-800 shadow-md' : 'text-slate-500 hover:bg-white/60'}`}
                 disabled={isLoading}
               >
-                <tab.icon size={14} /> {tab.label}
+                <tab.icon size={16} /> {tab.label}
               </button>
             ))}
           </div>
         </div>
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 pb-[env(safe-area-inset-bottom)]">
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-16 h-16 rounded-full border-4 border-slate-200 border-t-violet-500 animate-spin" />
@@ -185,7 +185,7 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="nouveau@email.com"
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 min-h-[48px] text-base"
                       disabled={isLoading}
                     />
                   </div>
@@ -196,11 +196,11 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                       value={emailPassword}
                       onChange={(e) => setEmailPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 min-h-[48px] text-base"
                       disabled={isLoading}
                     />
                   </div>
-                  <button type="submit" disabled={isLoading} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50">
+                  <button type="submit" disabled={isLoading} className="w-full min-h-[48px] py-3 bg-indigo-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 touch-target">
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save size={18} /> Mettre à jour l'email</>}
                   </button>
                 </form>
@@ -215,10 +215,10 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full border border-slate-200 rounded-xl pl-4 pr-12 py-3"
+                        className="w-full border border-slate-200 rounded-xl pl-4 pr-12 py-3 min-h-[48px] text-base"
                         disabled={isLoading}
                       />
-                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                      <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 rounded-lg hover:bg-slate-100 touch-target">
                         {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
@@ -231,10 +231,10 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full border border-slate-200 rounded-xl pl-4 pr-12 py-3"
+                        className="w-full border border-slate-200 rounded-xl pl-4 pr-12 py-3 min-h-[48px] text-base"
                         disabled={isLoading}
                       />
-                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                      <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 rounded-lg hover:bg-slate-100 touch-target">
                         {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
@@ -247,15 +247,15 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full border border-slate-200 rounded-xl pl-4 pr-12 py-3"
+                        className="w-full border border-slate-200 rounded-xl pl-4 pr-12 py-3 min-h-[48px] text-base"
                         disabled={isLoading}
                       />
-                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 rounded-lg hover:bg-slate-100 touch-target">
                         {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                     </div>
                   </div>
-                  <button type="submit" disabled={isLoading || (confirmPassword !== '' && newPassword !== confirmPassword)} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50">
+                  <button type="submit" disabled={isLoading || (confirmPassword !== '' && newPassword !== confirmPassword)} className="w-full min-h-[48px] py-3 bg-indigo-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 touch-target">
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save size={18} /> Mettre à jour le mot de passe</>}
                   </button>
                 </form>
@@ -269,7 +269,7 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                       value={backupEmail}
                       onChange={(e) => setBackupEmail(e.target.value)}
                       placeholder="secours@email.com"
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 min-h-[48px] text-base"
                       disabled={isLoading}
                     />
                     <p className="text-xs text-slate-500 mt-1">Laissez vide pour supprimer.</p>
@@ -281,11 +281,11 @@ const ProfileSettings = ({ onClose, initialTab = 'email' }: ProfileSettingsProps
                       value={backupPassword}
                       onChange={(e) => setBackupPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3"
+                      className="w-full border border-slate-200 rounded-xl px-4 py-3 min-h-[48px] text-base"
                       disabled={isLoading}
                     />
                   </div>
-                  <button type="submit" disabled={isLoading} className="w-full py-3 bg-amber-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50">
+                  <button type="submit" disabled={isLoading} className="w-full min-h-[48px] py-3 bg-amber-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 disabled:opacity-50 touch-target">
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save size={18} /> Mettre à jour</>}
                   </button>
                 </form>
