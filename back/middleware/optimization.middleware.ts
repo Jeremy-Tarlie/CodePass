@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import compression from 'compression';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../db';
 
 /**
  * Middleware de compression intelligent

@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 import { EncryptionService } from '../services/encryption.service';
 import { body } from 'express-validator';
 
-const prisma = new PrismaClient();
 const encryptionService = new EncryptionService();
 
 export class PasswordController {

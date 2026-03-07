@@ -1,9 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 import { EncryptionService } from './encryption.service';
-
-const prisma = new PrismaClient();
 const encryptionService = new EncryptionService();
 
 export interface JWTPayload {

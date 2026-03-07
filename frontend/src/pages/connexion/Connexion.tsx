@@ -99,11 +99,16 @@ const Connexion = () => {
     try {
       const API_URL = import.meta.env.VITE_API_URL;
       const API_KEY = import.meta.env.VITE_API_KEY;
+      console.log('API_URL:', API_URL);
+      console.log('API_KEY:', API_KEY);
+      console.log('emailTrimmed:', emailTrimmed);
       if (!API_URL || !API_KEY) {
         setError("Configuration API manquante (VITE_API_URL, VITE_API_KEY).");
         return;
       }
       const baseUrl = API_URL.replace(/\/+$/, '');
+      console.log('baseUrl:', baseUrl);
+
       const response = await fetch(`${baseUrl}/api/password-reset/request`, {
         method: 'POST',
         headers: {
@@ -112,6 +117,7 @@ const Connexion = () => {
         },
         body: JSON.stringify({ email: emailTrimmed }),
       });
+      console.log('response:', response);
       let data: { success?: boolean; message?: string; errors?: Array<{ msg?: string; message?: string }> };
       try {
         data = await response.json();

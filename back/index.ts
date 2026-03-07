@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './db';
 
 // Import des routes
 import authRoutes from './routes/auth.routes';
@@ -48,7 +48,6 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const prisma = new PrismaClient();
 
 // Configuration trust proxy pour Docker/Reverse Proxy (plus sécurisé)
 app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);

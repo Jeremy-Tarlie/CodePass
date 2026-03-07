@@ -1,9 +1,8 @@
 import crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 import { AuthService } from './auth.service';
 import { EmailService } from './email.service';
 
-const prisma = new PrismaClient();
 const authService = new AuthService();
 const emailService = new EmailService();
 

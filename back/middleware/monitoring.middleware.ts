@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 import os from 'os';
-
-const prisma = new PrismaClient();
 
 // Interface pour les métriques système
 interface SystemMetrics {

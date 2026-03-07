@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 import { EncryptionService } from '../services/encryption.service';
 import { EmailService } from '../services/email.service';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 import { body, validationResult } from 'express-validator';
 
-const prisma = new PrismaClient();
 const encryptionService = new EncryptionService();
 const emailService = new EmailService();
 
