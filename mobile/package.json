@@ -1,7 +1,7 @@
 {
   "name": "codepass-mobile",
   "private": true,
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "description": "CodePass - Gestionnaire de mots de passe (Android)",
   "scripts": {
