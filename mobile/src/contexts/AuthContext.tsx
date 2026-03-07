@@ -40,28 +40,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [API_URL]);
 
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<void> => {
-    if (!API_URL) throw new Error("URL de l'API non configurée. Vérifiez votre fichier .env");
-    if (!API_CONFIG.API_KEY) throw new Error("Clé API non configurée. Vérifiez votre fichier .env");
-    const response = await fetch(`${API_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
-      method: 'POST',
-      headers: getDefaultHeaders(),
-      body: JSON.stringify({ email, password, rememberMe }),
-    });
-    if (!response.ok) {
-      if (response.status === 401) throw new Error('Mauvais email ou mot de passe');
-      try {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Erreur serveur (${response.status})`);
-      } catch (parseError) {
-        throw new Error(`Erreur de connexion au serveur (${response.status}).`);
+    if (!API_URL) throw new Error("URL de l'API non configurée. Renseignez VITE_API_URL dans mobile/.env puis refaites le build (npm run build + cap sync).");
+    if (!API_CONFIG.API_KEY) throw new Error("Clé API non configurée. Renseignez VITE_API_KEY dans mobile/.env puis refaites le build.");
+    const loginUrl = `${API_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`;
+    try {
+      const response = await fetch(loginUrl, {
+        method: 'POST',
+        headers: getDefaultHeaders(),
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+      if (!response.ok) {
+        if (response.status === 401) throw new Error('Mauvais email ou mot de passe');
+        try {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Erreur serveur (${response.status})`);
+        } catch (parseError) {
+          throw new Error(`Erreur de connexion au serveur (${response.status}).`);
+        }
       }
-    }
-    const data = await response.json();
-    if (data.success) {
-      localStorage.setItem('authToken', data.token);
-      await verifyToken();
-    } else {
-      throw new Error(data.message || 'Erreur de connexion');
+      const data = await response.json();
+      if (data.success) {
+        localStorage.setItem('authToken', data.token);
+        await verifyToken();
+      } else {
+        throw new Error(data.message || 'Erreur de connexion');
+      }
+    } catch (err) {
+      if (err instanceof TypeError || (err instanceof Error && err.message.includes('fetch'))) {
+        throw new Error(`Impossible de joindre l'API à ${loginUrl}. Vérifiez : 1) mobile/.env (VITE_API_URL) puis rebuild, 2) CORS sur le serveur (https://localhost), 3) connexion réseau.`);
+      }
+      throw err;
     }
   };
 

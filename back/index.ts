@@ -54,12 +54,14 @@ const prisma = new PrismaClient();
 app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : false);
 
 // Configuration CORS
+const corsOriginRaw = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const allowedOriginsList = corsOriginRaw.split(',').map((o: string) => o.trim());
+if (process.env.NODE_ENV !== 'test') {
+  console.log('[CORS] Origines autorisées:', allowedOriginsList.length, '→', allowedOriginsList.includes('https://localhost') ? 'https://localhost présent ✓' : 'https://localhost MANQUANT');
+}
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Récupérer les origines autorisées depuis l'environnement
-    const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
-    const allowedOrigins = corsOrigin.split(',').map(origin => origin.trim());
-    
+    const allowedOrigins = allowedOriginsList;
     // En développement, accepter toutes les origines
     if (process.env.NODE_ENV === 'development') {
       return callback(null, true);

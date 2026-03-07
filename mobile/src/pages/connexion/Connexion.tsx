@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, Check, X, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Check, X, ArrowLeft, AlertCircle } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { API_CONFIG } from "../../config/api";
 
 type Tab = "connexion" | "register" | "forgotPassword" | "emailSent";
 
@@ -80,11 +81,9 @@ const Connexion = () => {
     setIsSubmitting(true);
     setError("");
     try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      const API_KEY = import.meta.env.VITE_API_KEY;
-      const response = await fetch(`${API_URL}/api/password-reset/request`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/password-reset/request`, {
         method: "POST",
-        headers: { "x-api-key": API_KEY, "Content-Type": "application/json" },
+        headers: { "x-api-key": API_CONFIG.API_KEY, "Content-Type": "application/json" },
         body: JSON.stringify({ email: forgotEmail }),
       });
       const data = await response.json();
@@ -163,9 +162,19 @@ const Connexion = () => {
     );
   }
 
+  const apiNotConfigured = !API_CONFIG.BASE_URL || !API_CONFIG.API_KEY;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center py-12 px-4">
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-md">
+        {apiNotConfigured && (
+          <div className="bg-amber-100 border-b border-amber-300 px-4 py-3 flex items-start gap-2">
+            <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
+            <div className="text-sm text-amber-800">
+              <strong>API non configurée.</strong> Renseignez <code className="bg-amber-200/70 px-1 rounded">VITE_API_URL</code> et <code className="bg-amber-200/70 px-1 rounded">VITE_API_KEY</code> dans <code className="bg-amber-200/70 px-1 rounded">mobile/.env</code>, puis refaites <code className="bg-amber-200/70 px-1 rounded">npm run build</code> et <code className="bg-amber-200/70 px-1 rounded">npx cap sync android</code>.
+            </div>
+          </div>
+        )}
         {activeTab !== "forgotPassword" && (
           <div className="flex bg-gray-50 border-b border-gray-200">
             <button

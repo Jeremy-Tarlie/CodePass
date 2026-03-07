@@ -1,6 +1,10 @@
+// Normaliser l'URL (sans slash final) pour éviter les doubles slashes
+const rawBaseUrl = import.meta.env.VITE_API_URL ?? '';
+const baseUrl = typeof rawBaseUrl === 'string' ? rawBaseUrl.trim().replace(/\/+$/, '') : '';
+
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_URL,
-  API_KEY: import.meta.env.VITE_API_KEY,
+  BASE_URL: baseUrl,
+  API_KEY: import.meta.env.VITE_API_KEY ?? '',
   ENDPOINTS: {
     AUTH: {
       LOGIN: '/api/auth/login',
