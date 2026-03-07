@@ -40,7 +40,7 @@
     "@types/node": "^20.10.5",
     "@types/nodemailer": "^6.4.14",
     "nodemon": "^3.0.2",
-    "prisma": "^7.4.2",
+    "prisma": "^7",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
