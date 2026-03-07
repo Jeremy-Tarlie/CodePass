@@ -43,6 +43,7 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/ensure-schema.js ./
 
 # Installer le CLI Prisma en prod (prune l'a retiré) pour exécuter "prisma migrate deploy" au démarrage
 RUN npm install && chown -R nodejs:nodejs /app/node_modules
@@ -56,5 +57,5 @@ USER nodejs
 # Exposer le port
 EXPOSE 3001
 
-# Commande de démarrage avec migration Prisma
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+# Au démarrage : migrations Prisma, puis colonnes manquantes (idempotent), puis l’app
+CMD ["sh", "-c", "npx prisma migrate deploy && node ensure-schema.js && npm run start"]
