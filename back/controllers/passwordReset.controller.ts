@@ -15,10 +15,12 @@ export class PasswordResetController {
       // Validation des erreurs
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        const errorList = errors.array().map((e: any) => ({ field: e.path, msg: e.msg }));
+        const firstMsg = errorList[0]?.msg || 'Données invalides';
         return res.status(400).json({
           success: false,
-          message: 'Données invalides',
-          errors: errors.array()
+          message: firstMsg,
+          errors: errorList
         });
       }
 

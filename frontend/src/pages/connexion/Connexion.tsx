@@ -95,28 +95,38 @@ const Connexion = () => {
     setForgotEmailError("");
     setIsSubmitting(true);
     setError("");
-    
+    const emailTrimmed = forgotEmail.trim();
     try {
       const API_URL = import.meta.env.VITE_API_URL;
       const API_KEY = import.meta.env.VITE_API_KEY;
-      
-      const response = await fetch(`${API_URL}/api/password-reset/request`, {
+      if (!API_URL || !API_KEY) {
+        setError("Configuration API manquante (VITE_API_URL, VITE_API_KEY).");
+        return;
+      }
+      const baseUrl = API_URL.replace(/\/+$/, '');
+      const response = await fetch(`${baseUrl}/api/password-reset/request`, {
         method: 'POST',
         headers: {
           'x-api-key': API_KEY,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: forgotEmail }),
+        body: JSON.stringify({ email: emailTrimmed }),
       });
-      
-      const data = await response.json();
-      
+      let data: { success?: boolean; message?: string; errors?: Array<{ msg?: string; message?: string }> };
+      try {
+        data = await response.json();
+      } catch {
+        setError(`Erreur serveur (${response.status}). Réponse invalide.`);
+        setForgotEmailSent(false);
+        return;
+      }
       if (response.ok && data.success) {
         setForgotEmailSent(true);
-        setSuccess("Email envoyé ! Un email de réinitialisation de mot de passe a été envoyé à " + forgotEmail + ". Veuillez vérifier votre boîte de réception.");
+        setSuccess("Email envoyé ! Un email de réinitialisation de mot de passe a été envoyé à " + emailTrimmed + ". Veuillez vérifier votre boîte de réception.");
       } else {
-        setError(data.message || "Erreur lors de l'envoi de l'email");
-        setForgotEmailSent(false); // S'assurer que le formulaire reste affiché
+        const detail = data.errors?.map((e: { msg?: string; message?: string }) => e.msg ?? e.message).filter(Boolean).join('. ') || data.message;
+        setError(detail || "Erreur lors de l'envoi de l'email");
+        setForgotEmailSent(false);
       }
     } catch (error) {
       console.error('Erreur lors de la demande de réinitialisation:', error);

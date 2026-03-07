@@ -43,12 +43,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!API_URL) throw new Error("URL de l'API non configurée. Renseignez VITE_API_URL dans mobile/.env puis refaites le build (npm run build + cap sync).");
     if (!API_CONFIG.API_KEY) throw new Error("Clé API non configurée. Renseignez VITE_API_KEY dans mobile/.env puis refaites le build.");
     const loginUrl = `${API_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`;
+    const emailTrimmed = (email ?? '').trim();
+    const passwordTrimmed = (password ?? '').trim();
     try {
+      console.log('🔄 Tentative de connexion vers:', loginUrl);
       const response = await fetch(loginUrl, {
         method: 'POST',
-        headers: getDefaultHeaders(),
-        body: JSON.stringify({ email, password, rememberMe }),
+        headers: {
+          'x-api-key': API_CONFIG.API_KEY,
+          ...getDefaultHeaders(),
+        },
+        body: JSON.stringify({ email: emailTrimmed, password: passwordTrimmed, rememberMe }),
       });
+      console.log('📡 Réponse reçue, status:', response.status);
       if (!response.ok) {
         if (response.status === 401) throw new Error('Mauvais email ou mot de passe');
         try {

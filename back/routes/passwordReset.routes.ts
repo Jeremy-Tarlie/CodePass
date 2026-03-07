@@ -7,9 +7,12 @@ const router = Router();
 // Validation pour la demande de réinitialisation
 const requestResetValidation = [
   body('email')
+    .exists({ checkNull: true, checkFalsy: true })
+    .withMessage('L\'email est requis')
+    .trim()
     .isEmail()
-    .normalizeEmail()
     .withMessage('Email invalide')
+    .normalizeEmail()
     .isLength({ min: 5, max: 255 })
     .withMessage('Email doit contenir entre 5 et 255 caractères')
 ];
