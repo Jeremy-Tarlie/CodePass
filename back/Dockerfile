@@ -38,10 +38,14 @@ WORKDIR /app
 # Copier les fichiers nécessaires depuis le builder
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+# prisma/ contient schema.prisma et migrations/ (obligatoire pour migrate deploy)
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./
 COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
+
+# Installer le CLI Prisma en prod (prune l'a retiré) pour exécuter "prisma migrate deploy" au démarrage
+RUN npm install && chown -R nodejs:nodejs /app/node_modules
 
 # Créer le dossier logs avec les bonnes permissions
 RUN mkdir -p /app/logs && chown -R nodejs:nodejs /app/logs
